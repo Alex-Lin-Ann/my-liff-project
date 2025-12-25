@@ -3,72 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFF 簽到測試</title>
+    <title>專業清洗預約系統</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; }
-        #status { color: red; margin-top: 20px; }
-        button { padding: 10px 20px; background: #00B900; color: white; border: none; border-radius: 5px; font-size: 16px; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.5s; }
+        
+        /* 選項按鈕樣式 */
+        .option-group { margin-bottom: 20px; }
+        .option-title { font-weight: bold; margin-bottom: 10px; display: block; color: #0066cc;}
+        label { display: block; padding: 10px; border: 1px solid #ddd; margin-bottom: 5px; border-radius: 5px; cursor: pointer; }
+        input[type="checkbox"], input[type="radio"] { margin-right: 10px; }
+        label:has(input:checked) { background-color: #e6f7ff; border-color: #1890ff; }
+
+        /* 按鈕樣式 */
+        .btn-box { text-align: center; margin-top: 20px; display: flex; justify-content: space-between; }
+        button { padding: 12px 25px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        .btn-next, .btn-submit { background: #00B900; color: white; width: 48%; }
+        .btn-prev { background: #999; color: white; width: 48%; }
+        
+        input[type="date"] { width: 100%; padding: 10px; font-size: 16px; box-sizing: border-box; }
+        
+        #loading { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); display:flex; justify-content:center; align-items:center; z-index:999; display:none; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
-    <h2>LINE LIFF 資料回傳測試</h2>
-    <div id="content">
-        <p>讀取中...</p>
+
+<div id="loading">資料處理中...</div>
+
+<div class="container">
+    <h2>預約清洗服務</h2>
+    
+    <div id="step1" class="step active">
+        <h3>步驟 1/3：請選擇服務地區</h3>
+        <div class="option-group">
+            <label><input type="radio" name="region" value="台北市"> 台北市</label>
+            <label><input type="radio" name="region" value="新北市"> 新北市</label>
+            <label><input type="radio" name="region" value="桃園市"> 桃園市</label>
+            <label><input type="radio" name="region" value="其他地區"> 其他地區 (請洽客服)</label>
+        </div>
+        <div class="btn-box" style="justify-content: center;">
+            <button class="btn-next" onclick="nextStep(1)">下一步</button>
+        </div>
     </div>
-    <p id="status"></p>
 
-    <script>
-        // ==========================================
-        // 請在這裡填入你的資訊
-        // ==========================================
-        const MY_LIFF_ID = "2008741256-7dO5Dfxz";  // 暫時先空著，等第三階段拿到再填
-        const MY_GAS_URL = "https://script.google.com/macros/s/AKfycbwwyiIfTm5cdcg9AmsaF8Q_vn9BfOx8mbhyUV4JjrVM00r6GzBFMWU_CYC_pE9Ei1ZM/exec"; // 把第一階段的 GAS 網址貼在這裡
-        // ==========================================
+    <div id="step2" class="step">
+        <h3>步驟 2/3：選擇清洗項目</h3>
+        
+        <div class="option-group">
+            <span class="option-title">【A 類】空調/家電 (師傅A組)</span>
+            <label><input type="checkbox" name="serviceA" value="分離式冷氣"> 分離式冷氣</label>
+            <label><input type="checkbox" name="serviceA" value="窗型冷氣"> 窗型冷氣</label>
+            <label><input type="checkbox" name="serviceA" value="吊隱式冷氣"> 吊隱式冷氣</label>
+            <label><input type="checkbox" name="serviceA" value="四方吹冷氣"> 四方吹冷氣</label>
+            <label><input type="checkbox" name="serviceA" value="直立式洗衣機"> 直立式洗衣機</label>
+            <label><input type="checkbox" name="serviceA" value="滾筒式洗衣機"> 滾筒式洗衣機</label>
+        </div>
 
-        document.addEventListener('DOMContentLoaded', function() {
-            liff.init({ liffId: MY_LIFF_ID })
-                .then(() => {
-                    if (!liff.isLoggedIn()) {
-                        liff.login();
-                    } else {
-                        runApp();
-                    }
-                })
-                .catch((err) => {
-                    document.getElementById('status').innerText = "LIFF 初始化失敗: " + err;
-                });
-        });
+        <div class="option-group">
+            <span class="option-title">【B 類】家具/環境 (師傅B組)</span>
+            <label><input type="checkbox" name="serviceB" value="單人沙發"> 洗沙發 (單人)</label>
+            <label><input type="checkbox" name="serviceB" value="雙人沙發"> 洗沙發 (雙人)</label>
+            <label><input type="checkbox" name="serviceB" value="單人床鋪"> 洗床鋪 (單人)</label>
+            <label><input type="checkbox" name="serviceB" value="雙人床鋪"> 洗床鋪 (雙人)</label>
+            <label><input type="checkbox" name="serviceB" value="居家除塵蟎"> 居家除塵蟎 (1間)</label>
+            <label><input type="checkbox" name="serviceB" value="浴室清潔鍍膜"> 浴室清潔鍍膜 (1間)</label>
+        </div>
 
-        function runApp() {
-            liff.getProfile().then(profile => {
-                // 1. 顯示在畫面上
-                document.getElementById('content').innerHTML = `
-                    <p>哈囉，<b>${profile.displayName}</b></p>
-                    <p>你的 ID 是：${profile.userId}</p>
-                    <button onclick="sendData('${profile.userId}', '${profile.displayName}')">點我簽到</button>
-                `;
-            }).catch(err => {
-                document.getElementById('status').innerText = "取得資料失敗: " + err;
+        <p style="font-size:12px; color:red;">* 若同時選擇 A 與 B 類，時間將依據 A 類師傅行程安排。</p>
+
+        <div class="btn-box">
+            <button class="btn-prev" onclick="prevStep(2)">上一步</button>
+            <button class="btn-next" onclick="nextStep(2)">下一步</button>
+        </div>
+    </div>
+
+    <div id="step3" class="step">
+        <h3>步驟 3/3：選擇預約時間</h3>
+        
+        <p>您選擇的優先排序：<span id="priority-display" style="font-weight:bold; color:blue;"></span></p>
+
+        <div class="option-group">
+            <label>預約日期：</label>
+            <input type="date" id="booking-date">
+        </div>
+
+        <div class="option-group">
+            <label>時段選擇：</label>
+            <label><input type="radio" name="timeSlot" value="上午 (09:00-12:00)"> 上午 (09:00-12:00)</label>
+            <label><input type="radio" name="timeSlot" value="中午 (12:00-14:00)"> 中午 (12:00-14:00)</label>
+            <label><input type="radio" name="timeSlot" value="下午 (14:00-18:00)"> 下午 (14:00-18:00)</label>
+        </div>
+
+        <div class="btn-box">
+            <button class="btn-prev" onclick="prevStep(3)">上一步</button>
+            <button class="btn-submit" onclick="submitOrder()">確認預約</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ==========================================
+    // 設定區
+    // ==========================================
+    const MY_LIFF_ID = "你的_LIFF_ID"; 
+    const MY_GAS_URL = "你的_GAS_部署網址"; 
+    // ==========================================
+
+    let userProfile = {};
+    let bookingData = {
+        region: "",
+        serviceA: [],
+        serviceB: [],
+        date: "",
+        timeSlot: ""
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // 設定日期選擇器不能選過去的時間
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('booking-date').setAttribute('min', today);
+
+        liff.init({ liffId: MY_LIFF_ID })
+            .then(() => {
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                } else {
+                    liff.getProfile().then(profile => {
+                        userProfile = profile;
+                    });
+                }
             });
-        }
+    });
 
-        function sendData(userId, displayName) {
-            document.getElementById('status').innerText = "正在傳送資料...";
+    function nextStep(currentStep) {
+        if (currentStep === 1) {
+            const region = document.querySelector('input[name="region"]:checked');
+            if (!region) return alert("請選擇地區");
+            bookingData.region = region.value;
+            showStep(2);
+        } else if (currentStep === 2) {
+            // 收集 A 類選項
+            bookingData.serviceA = Array.from(document.querySelectorAll('input[name="serviceA"]:checked')).map(e => e.value);
+            // 收集 B 類選項
+            bookingData.serviceB = Array.from(document.querySelectorAll('input[name="serviceB"]:checked')).map(e => e.value);
+
+            if (bookingData.serviceA.length === 0 && bookingData.serviceB.length === 0) {
+                return alert("請至少選擇一項服務");
+            }
+
+            // 判斷邏輯顯示給使用者看
+            const displayEl = document.getElementById('priority-display');
+            if (bookingData.serviceA.length > 0) {
+                displayEl.innerText = "【A 類師傅】行程為主";
+            } else {
+                displayEl.innerText = "【B 類師傅】行程為主";
+            }
             
-            fetch(MY_GAS_URL, {
-                method: 'POST',
-                body: JSON.stringify({ userId: userId, displayName: displayName }),
-                mode: 'no-cors', // 重要：跨域傳輸設定
-                headers: { 'Content-Type': 'application/json' }
-            }).then(() => {
-                document.getElementById('status').innerText = "✅ 簽到成功！請檢查 Google Sheet";
-                document.getElementById('status').style.color = "green";
-            }).catch(err => {
-                document.getElementById('status').innerText = "❌ 傳送失敗";
-            });
+            showStep(3);
         }
-    </script>
-</body>
+    }
 
+    function prevStep(currentStep) {
+        showStep(currentStep - 1);
+    }
+
+    function showStep(stepNum) {
+        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+        document.getElementById('step' + stepNum).classList.add('active');
+    }
+
+    function submitOrder() {
+        const date = document.getElementById('booking-date').value;
+        const timeSlot = document.querySelector('input[name="timeSlot"]:checked');
+
+        if (!date || !timeSlot) return alert("請完整選擇日期與時段");
+
+        bookingData.date = date;
+        bookingData.timeSlot = timeSlot.value;
+
+        // 準備傳送資料
+        const payload = {
+            userId: userProfile.userId,
+            displayName: userProfile.displayName,
+            region: bookingData.region,
+            serviceA: bookingData.serviceA.join(", "),
+            serviceB: bookingData.serviceB.join(", "),
+            date: bookingData.date,
+            timeSlot: bookingData.timeSlot
+        };
+
+        document.getElementById('loading').style.display = 'flex';
+
+        fetch(MY_GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' }
+        }).then(() => {
+            document.getElementById('loading').style.display = 'none';
+            alert("✅ 預約成功！\n我們已發送確認訊息至您的 LINE。");
+            liff.closeWindow();
+        }).catch(err => {
+            document.getElementById('loading').style.display = 'none';
+            alert("❌ 預約失敗，請稍後再試。\n" + err);
+        });
+    }
+</script>
+
+</body>
 </html>
