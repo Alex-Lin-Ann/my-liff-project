@@ -127,7 +127,7 @@
 <script>
     // ==========================================
     // 請記得更新為最新的 GAS 網址 (記得要重新部署為新版本)
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbztfeHCPI_chUdYFWHtf4zUIGHq-tcaZtCoBqvFjT2QJCj5usp-LJ2r41iQoD9_SpFNVw/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxp593Gj2R0LH887WYvCWFYFKkybsiWqDBCynU_TUnOosl8QC0w4SscjSswtYVqWqSfGA/exec"; 
     const LIFF_ID = "2008741256-7dO5Dfxz"; 
     // ==========================================
 
@@ -298,31 +298,45 @@
 
     function changeStep(d) {
         if (d === 1) {
-            if (currentStep === 1 && (!document.getElementById('city-select').value || !document.getElementById('district-select').value)) return Swal.fire('請選擇地區');
-            if (currentStep === 2 && order.totalPrice === 0) return Swal.fire('請選擇服務');
+            // Step 1 驗證
+            if (currentStep === 1 && (!document.getElementById('city-select').value || !document.getElementById('district-select').value)) {
+                return Swal.fire('請選擇地區');
+            }
+            // Step 2 驗證
+            if (currentStep === 2 && order.totalPrice === 0) {
+                return Swal.fire('請選擇服務');
+            }
+            // Step 4 驗證 (準備進入 Step 5)
             if (currentStep === 4) {
                 if (order.slots.length === 0) return Swal.fire('請至少選 1 個時段');
-                document.getElementById('final-item-list').innerText = Object.keys(order.items).filter(k=>order.items[k]>0).map(k=>(CATALOG.A[k]||CATALOG.B[k]).name+' x'+order.items[k]).join(', ');
+                
+                // ★★★ 修正點：進入 Step 5 前，強制更新一次地址前綴顯示 ★★★
+                updateAddrPrefix(); 
+
+                // 準備 Step 5 的顯示資料
+                document.getElementById('final-item-list').innerText = Object.keys(order.items).filter(k => order.items[k] > 0).map(k => (CATALOG.A[k] || CATALOG.B[k]).name + ' x' + order.items[k]).join(', ');
                 document.getElementById('final-price').innerText = order.totalPrice;
                 document.getElementById('final-slot-list').innerHTML = order.slots.map((s, i) => `<li>順位 ${i+1}: ${s.date} ${s.time}</li>`).join('');
             }
         }
-        if (currentStep === 5 && d === 1) { submitOrder(); return; }
         
-        currentStep += d;
-        
+        // 提交訂單
+        if (currentStep === 5 && d === 1) { 
+            submitOrder(); 
+            return; 
+        }
+
         // 切換頁面顯示
+        currentStep += d;
         document.querySelectorAll('.step-section').forEach(e => e.classList.remove('active'));
         document.getElementById(`step${currentStep}`).classList.add('active');
         
-        // 進入步驟 4 時，自動載入 30 天行程
-        if (currentStep === 4) {
-            load30DayPreview();
-        }
-
+        // 更新按鈕狀態
         document.getElementById('btn-prev').disabled = (currentStep === 1);
         document.getElementById('btn-next').innerText = (currentStep === 5) ? '確認預約' : '下一步';
-        window.scrollTo(0,0);
+        
+        // 捲動到頂部
+        window.scrollTo(0, 0);
     }
 
     function submitOrder() {
@@ -352,4 +366,5 @@
 </script>
 </body>
 </html>
+
 
