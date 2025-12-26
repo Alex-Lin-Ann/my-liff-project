@@ -14,19 +14,27 @@
         .step-section { display: none; }
         .step-section.active { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Tab & Service Styles */
         .nav-tabs .nav-link { color: #495057; background-color: #fff; border: 1px solid #dee2e6; margin-right: 2px; }
         .nav-tabs .nav-link.active { color: #0d6efd; font-weight: bold; background-color: #fff; border-color: #dee2e6 #dee2e6 #fff; }
         .service-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #e9ecef; background: white; }
         .qty-control { display: flex; align-items: center; }
         .qty-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #ced4da; background: white; color: #0d6efd; font-size: 18px; line-height: 1; padding: 0; display: flex; justify-content: center; align-items: center; }
         .qty-input { width: 40px; text-align: center; border: none; background: transparent; font-weight: bold; font-size: 16px; }
+        /* Image Preview */
         .img-box { position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid #dee2e6; background: #fff; margin-right: 10px; margin-bottom: 10px; float: left; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
         .btn-del-img { position: absolute; top: 0; right: 0; background: rgba(220, 53, 69, 0.9); color: white; width: 20px; height: 20px; font-size: 14px; line-height: 20px; text-align: center; cursor: pointer; }
+        /* Slot Buttons */
         .slot-btn { width: 100%; text-align: left; margin-bottom: 8px; position: relative; border-radius: 8px; padding: 10px 12px; transition: all 0.2s; border: 1px solid #0d6efd; color: #0d6efd; background: #fff; }
         .slot-btn.active { background-color: #e7f1ff; font-weight: bold; box-shadow: 0 0 0 1px #0d6efd; }
         .rank-badge { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; background: #0d6efd; color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; display: none; }
         .slot-btn.active .rank-badge { display: block; }
+        /* Preview Schedule (New) */
+        .preview-box { max-height: 150px; overflow-y: auto; background: #fff; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px; margin-bottom: 15px; font-size: 0.9rem; }
+        .preview-item { padding: 5px 0; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; }
+        .region-tag { background: #ffecb3; color: #856404; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 12px 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); display: flex; gap: 10px; z-index: 999; }
         .btn-step { flex: 1; padding: 12px; font-size: 16px; border-radius: 8px; }
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center; }
@@ -82,10 +90,17 @@
     <div id="step4" class="step-section">
         <div class="card border-0 shadow-sm"><div class="card-body">
             <h5 class="card-title">4. 選擇預約時段</h5>
-            <div class="alert alert-warning small">請選擇 3 個時段 (依優先順序)。系統會顯示師傅當天已在的區域，選擇同區可增加媒合成功率！</div>
-            <label class="form-label fw-bold">預約日期：</label>
+            
+            <div class="alert alert-success small mb-2">👇 <strong>師傅近期行程 (30天)</strong><br>選擇相同區域可加速派工！</div>
+            <div id="preview-schedule-box" class="preview-box">
+                <div class="text-center text-muted">正在載入行程表...</div>
+            </div>
+
+            <label class="form-label fw-bold">選擇預約日期：</label>
             <input type="date" id="date-picker" class="form-control form-control-lg mb-3" onchange="fetchSlots()">
+            
             <div id="busy-hint" class="mb-2"></div>
+            
             <div id="slots-container" class="row g-2"><div class="text-center text-muted py-4">請先選擇日期</div></div>
         </div></div>
     </div>
@@ -111,10 +126,8 @@
 
 <script>
     // ==========================================
-    // 【設定區】
-    // ==========================================
-    // 請確認這裡的網址是您的「網頁應用程式網址」，結尾是 /exec，不是 /edit
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzE6RbjTSR_hULwoPY0ptKU8QTkzInaAMdRDhBj7JkD0o2hkdtvBQOhyNZTxRC84Ufppg/exec"; 
+    // 請記得更新為最新的 GAS 網址 (記得要重新部署為新版本)
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzomTOW11HSyLp4ZKMykoftS0qApc1otS7NwiOA_8xnfbZJelNsJUGHpwkVbWpCUIPTaw/exec"; 
     const LIFF_ID = "2008741256-7dO5Dfxz"; 
     // ==========================================
 
@@ -124,6 +137,7 @@
     let currentStep = 1;
     let order = { items: {}, totalPrice: 0, totalTime: 0, images: [], slots: [], tempTimeA: 0, tempTimeB: 0 };
     let userProfile = null;
+    let isPreviewLoaded = false; // 避免重複讀取
 
     window.onload = async () => {
         renderMenu('A', 'content-a'); renderMenu('B', 'content-b');
@@ -196,8 +210,44 @@
     }
     function removeImage(i) { order.images.splice(i, 1); renderPreviews(); }
 
+    // ★ 新增：讀取 30 天行程
+    function load30DayPreview() {
+        if (isPreviewLoaded) return; // 避免重複讀取
+        
+        fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'get30DayPreview' })
+        })
+        .then(res => res.json())
+        .then(map => {
+            let html = '';
+            // 排序日期
+            let dates = Object.keys(map).sort();
+            if (dates.length === 0) {
+                html = '<div class="text-center text-muted">未來 30 天尚無預約，歡迎選購！</div>';
+            } else {
+                dates.forEach(d => {
+                    let regions = map[d].join('、');
+                    html += `
+                    <div class="preview-item">
+                        <div>${d.slice(5)}</div>
+                        <div><span class="region-tag">${regions}</span></div>
+                    </div>`;
+                });
+            }
+            document.getElementById('preview-schedule-box').innerHTML = html;
+            isPreviewLoaded = true;
+        })
+        .catch(err => {
+            document.getElementById('preview-schedule-box').innerHTML = '<div class="text-danger small">載入失敗，請檢查網路</div>';
+        });
+    }
+
+    // ★ 修正：先檢查日期，避免 undefined error
     function fetchSlots() {
-        let date = document.getElementById('date-picker').value; if (!date) return;
+        let date = document.getElementById('date-picker').value;
+        if (!date) return; // 沒有日期就不要送請求
+        
         document.getElementById('slots-container').innerHTML = '<div class="text-center w-100 py-4"><div class="spinner-border text-primary"></div></div>';
         document.getElementById('busy-hint').innerHTML = '';
 
@@ -207,10 +257,17 @@
         })
         .then(res => res.json())
         .then(res => {
+            // 先防呆，確認 res.slots 存在
+            if (!res.slots) {
+                document.getElementById('slots-container').innerHTML = `<div class="alert alert-danger">系統回傳錯誤：${res.msg || '未知'}</div>`;
+                return;
+            }
+
             if (res.busyInfo && res.busyInfo.length > 0) {
                 let regions = [...new Set(res.busyInfo.map(i => i.region).filter(r => r !== "已預約"))];
-                if (regions.length > 0) document.getElementById('busy-hint').innerHTML = `<span class="badge bg-warning text-dark">💡 師傅行程：${regions.join('、')}</span>`;
+                if (regions.length > 0) document.getElementById('busy-hint').innerHTML = `<span class="badge bg-warning text-dark">💡 當日師傅已在：${regions.join('、')}</span>`;
             }
+            
             let html = '';
             if (res.slots.length === 0) html = '<div class="alert alert-danger w-100">本日額滿</div>';
             else {
@@ -225,7 +282,7 @@
             order.tempTimeA = res.timeA; order.tempTimeB = res.timeB;
         })
         .catch(err => {
-            document.getElementById('slots-container').innerHTML = `<div class="alert alert-danger">讀取失敗 (CORS/Network)。請確認 GAS 網址正確。<br>錯誤訊息：${err}</div>`;
+            document.getElementById('slots-container').innerHTML = `<div class="alert alert-danger">讀取失敗。請確認 GAS 網址與部署狀態。<br>${err}</div>`;
         });
     }
 
@@ -236,7 +293,7 @@
             if (order.slots.length >= 3) return Swal.fire('最多選擇 3 個時段');
             order.slots.push({ date: date, time: time });
         }
-        fetchSlots(); // 重新渲染按鈕狀態
+        fetchSlots();
     }
 
     function changeStep(d) {
@@ -251,9 +308,18 @@
             }
         }
         if (currentStep === 5 && d === 1) { submitOrder(); return; }
+        
         currentStep += d;
+        
+        // 切換頁面顯示
         document.querySelectorAll('.step-section').forEach(e => e.classList.remove('active'));
         document.getElementById(`step${currentStep}`).classList.add('active');
+        
+        // 進入步驟 4 時，自動載入 30 天行程
+        if (currentStep === 4) {
+            load30DayPreview();
+        }
+
         document.getElementById('btn-prev').disabled = (currentStep === 1);
         document.getElementById('btn-next').innerText = (currentStep === 5) ? '確認預約' : '下一步';
         window.scrollTo(0,0);
