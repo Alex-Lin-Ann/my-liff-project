@@ -1,193 +1,734 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
-  <base target="_top">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-  <title>預約清潔服務</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    body { background-color: #f8f9fa; padding-bottom: 80px; }
-    .step { display: none; }
-    .step.active { display: block; }
-    .slot-btn { width: 100%; margin-bottom: 10px; text-align: left; position: relative; }
-    .slot-btn.active { background-color: #198754; color: white; border-color: #198754; }
-    .rank-badge { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: white; color: #198754; width: 20px; height: 20px; border-radius: 50%; text-align: center; font-size: 12px; line-height: 20px; font-weight: bold; display: none; }
-    .slot-btn.active .rank-badge { display: block; }
-    .img-preview { width: 60px; height: 60px; object-fit: cover; margin: 5px; border-radius: 5px; border: 1px solid #ddd; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>專業清潔預約系統</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            padding-bottom: 80px; /* 預留底部按鈕空間 */
+        }
+        
+        /* 步驟切換控制 */
+        .step-section { display: none; }
+        .step-section.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* 選項卡樣式 */
+        .nav-tabs .nav-link { color: #495057; }
+        .nav-tabs .nav-link.active { color: #0d6efd; font-weight: bold; }
+
+        /* 服務項目行 */
+        .service-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 10px;
+            border-bottom: 1px solid #e9ecef;
+            background: white;
+        }
+        .service-info h6 { margin: 0; font-weight: bold; }
+        .service-info small { color: #6c757d; }
+        
+        /* 加減按鈕群組 */
+        .qty-control { display: flex; align-items: center; }
+        .qty-btn {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            border: 1px solid #ced4da;
+            background: white;
+            color: #0d6efd;
+            font-size: 18px;
+            line-height: 1;
+            padding: 0;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .qty-btn:active { background: #e9ecef; }
+        .qty-input {
+            width: 40px; text-align: center; border: none; background: transparent; font-weight: bold; font-size: 16px;
+        }
+
+        /* 照片預覽區 */
+        .preview-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .img-box {
+            position: relative; width: 80px; height: 80px;
+            border-radius: 8px; overflow: hidden; border: 1px solid #dee2e6;
+            background: #fff;
+        }
+        .img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .btn-del-img {
+            position: absolute; top: 0; right: 0;
+            background: rgba(220, 53, 69, 0.9); color: white;
+            width: 20px; height: 20px;
+            font-size: 14px; line-height: 20px; text-align: center;
+            cursor: pointer;
+        }
+
+        /* 時間按鈕樣式 */
+        .slot-btn {
+            width: 100%; text-align: left; margin-bottom: 8px;
+            position: relative; border-radius: 8px;
+            padding: 10px 12px;
+            transition: all 0.2s;
+        }
+        .slot-btn:hover { transform: translateY(-1px); }
+        .slot-btn.active {
+            background-color: #e7f1ff; border-color: #0d6efd; color: #0d6efd; font-weight: bold;
+            box-shadow: 0 0 0 1px #0d6efd;
+        }
+        .rank-badge {
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            width: 24px; height: 24px;
+            background: #0d6efd; color: white;
+            border-radius: 50%;
+            text-align: center; line-height: 24px; font-size: 12px;
+            display: none;
+        }
+        .slot-btn.active .rank-badge { display: block; }
+
+        /* 底部導航 */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: white; padding: 12px 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            display: flex; gap: 10px; z-index: 999;
+        }
+        .btn-step { flex: 1; padding: 12px; font-size: 16px; border-radius: 8px; }
+
+        /* 載入遮罩 */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9); z-index: 2000;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+        }
+    </style>
 </head>
 <body>
 
+<div id="loading-overlay">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+    <div class="mt-3 fw-bold text-secondary" id="loading-text">處理中...</div>
+</div>
+
 <div class="container mt-3">
-  <h4 class="text-center mb-4">預約清潔服務</h4>
+    <h4 class="text-center mb-4 fw-bold text-primary">預約清潔服務</h4>
 
-  <div id="step1" class="step active">
-    <h5>1. 選擇地區</h5>
-    <select id="city" class="form-select mb-3" onchange="updateDistricts()">
-      <option value="" disabled selected>縣市</option>
-      <option value="台北市">台北市</option>
-      <option value="新北市">新北市</option>
-      <option value="桃園市">桃園市</option>
-      <option value="其他縣市">其他縣市</option>
-    </select>
-    <select id="district" class="form-select mb-3" disabled><option>區域</option></select>
-    <button class="btn btn-primary w-100" onclick="nextStep(2)">下一步</button>
-  </div>
-
-  <div id="step2" class="step">
-    <h5>2. 選擇項目</h5>
-    <div id="menuList"></div>
-    <div class="text-end fw-bold text-danger my-3">總計: $<span id="totalPrice">0</span></div>
-    <button class="btn btn-secondary w-100 mb-2" onclick="nextStep(1)">上一步</button>
-    <button class="btn btn-primary w-100" onclick="nextStep(3)">下一步</button>
-  </div>
-
-  <div id="step3" class="step">
-    <h5>3. 上傳照片 (選填)</h5>
-    <input type="file" id="fileInput" class="form-control mb-2" accept="image/*" multiple onchange="handleFiles(this.files)">
-    <div id="previewBox"></div>
-    <button class="btn btn-secondary w-100 mb-2" onclick="nextStep(2)">上一步</button>
-    <button class="btn btn-primary w-100" onclick="nextStep(4)">下一步</button>
-  </div>
-
-  <div id="step4" class="step">
-    <h5>4. 選擇時間 (最多3個)</h5>
-    <input type="date" id="datePicker" class="form-control mb-3" onchange="loadSlots()">
-    <div id="busyHint" class="mb-2 text-muted small"></div>
-    <div id="slotBox" class="row g-2"></div>
-    <button class="btn btn-secondary w-100 mt-3 mb-2" onclick="nextStep(3)">上一步</button>
-    <button class="btn btn-primary w-100" onclick="nextStep(5)" id="btnStep5" disabled>下一步</button>
-  </div>
-
-  <div id="step5" class="step">
-    <h5>5. 確認資料</h5>
-    <input type="text" id="userName" class="form-control mb-2" placeholder="稱呼">
-    <input type="tel" id="userPhone" class="form-control mb-2" placeholder="電話">
-    <input type="text" id="userAddr" class="form-control mb-3" placeholder="詳細地址">
-    <div class="alert alert-secondary small">
-        <strong>已選時段：</strong><ul id="finalSlots" class="mb-0 ps-3"></ul>
+    <div id="step1" class="step-section active">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-3">1. 服務地區</h5>
+                <div class="mb-3">
+                    <label class="form-label text-muted">選擇縣市</label>
+                    <select id="city-select" class="form-select form-select-lg" onchange="updateDistricts()">
+                        <option value="" disabled selected>請選擇縣市</option>
+                        <option value="台北市">台北市</option>
+                        <option value="新北市">新北市</option>
+                        <option value="桃園市">桃園市</option>
+                        <option value="其他縣市">其他縣市</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">選擇區域</label>
+                    <select id="district-select" class="form-select form-select-lg" disabled>
+                        <option value="">請先選擇縣市</option>
+                    </select>
+                </div>
+            </div>
+        </div>
     </div>
-    <button class="btn btn-secondary w-100 mb-2" onclick="nextStep(4)">上一步</button>
-    <button class="btn btn-success w-100" onclick="submitOrder()">送出預約</button>
-  </div>
+
+    <div id="step2" class="step-section">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-2">
+                <h5 class="card-title p-2">2. 選擇服務項目</h5>
+                
+                <ul class="nav nav-tabs nav-fill mb-3" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="tab-a" data-bs-toggle="tab" data-bs-target="#content-a" type="button">A. 冷氣/家電</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="tab-b" data-bs-toggle="tab" data-bs-target="#content-b" type="button">B. 居家/清潔</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="content-a">
+                        </div>
+                    <div class="tab-pane fade" id="content-b">
+                        </div>
+                </div>
+
+                <div class="alert alert-info mt-3 d-flex justify-content-between align-items-center mb-0">
+                    <span>預估總額：</span>
+                    <strong class="fs-4 text-danger">$<span id="total-price">0</span></strong>
+                </div>
+                <div class="text-end text-muted small mt-1">預估工時: <span id="total-time">0</span> 分鐘</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="step3" class="step-section">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">3. 上傳現場照片 (選填)</h5>
+                <p class="text-muted small">建議上傳：冷氣外觀/陽台/沙發髒污處。最多10張。</p>
+                
+                <div class="mb-3">
+                    <label for="file-upload" class="btn btn-outline-primary w-100">
+                        ➕ 點此選擇照片
+                        <input type="file" id="file-upload" accept="image/*" multiple hidden onchange="handleFiles(this.files)">
+                    </label>
+                </div>
+
+                <div id="preview-area" class="preview-grid">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="step4" class="step-section">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">4. 選擇預約時段</h5>
+                <div class="alert alert-warning small">
+                    <strong>請選擇 3 個時段</strong> (依優先順序)。<br>
+                    系統會顯示師傅當天已在的區域，選擇同區可增加媒合成功率！
+                </div>
+                
+                <label class="form-label fw-bold">預約日期：</label>
+                <input type="date" id="date-picker" class="form-control form-control-lg mb-3" onchange="fetchSlots()">
+                
+                <div id="busy-hint" class="mb-2"></div>
+
+                <div id="slots-container" class="row g-2">
+                    <div class="text-center text-muted py-4">請先選擇日期</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="step5" class="step-section">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-3">5. 確認預約資料</h5>
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted">稱呼</label>
+                    <input type="text" id="user-name" class="form-control" placeholder="請輸入您的稱呼">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">聯絡電話</label>
+                    <input type="tel" id="user-phone" class="form-control" placeholder="09xx-xxx-xxx">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">詳細地址</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light" id="addr-prefix"></span>
+                        <input type="text" id="user-addr" class="form-control" placeholder="路/街/巷/弄/號/樓">
+                    </div>
+                </div>
+
+                <div class="bg-light p-3 rounded mb-3">
+                    <h6 class="fw-bold border-bottom pb-2">已選時段 (共 <span id="slot-count-display">0</span> 個)</h6>
+                    <ul id="final-slot-list" class="ps-3 mb-0 text-secondary small"></ul>
+                </div>
+
+                <div class="bg-light p-3 rounded">
+                    <h6 class="fw-bold border-bottom pb-2">服務項目</h6>
+                    <div id="final-item-list" class="text-secondary small"></div>
+                    <div class="text-end fw-bold text-danger mt-2">總計: $<span id="final-price">0</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-nav">
+    <button id="btn-prev" class="btn btn-secondary btn-step" onclick="changeStep(-1)" disabled>上一步</button>
+    <button id="btn-next" class="btn btn-primary btn-step" onclick="changeStep(1)">下一步</button>
 </div>
 
 <script>
-  // ================= 設定區 =================
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzSOjtg9Y5FXPEjKzgmyIFctllRHMlLTuEdOXJV4HcLFbMaOiM7HMcNVYDJtrt-u_CX/exec"; 
-  const LIFF_ID = "2008741256-7dO5Dfxz";
-  // =========================================
-
-  const CITY_DATA = { "台北市":["大安區","信義區","士林區"], "新北市":["板橋區","新莊區"], "桃園市":["桃園區","中壢區"], "其他縣市":[] }; // 簡化範例，請自行補全
-  const CATALOG = { 'A':{'ac':{n:'冷氣',p:2000}}, 'B':{'sofa':{n:'沙發',p:1000}} }; // 簡化範例，請自行補全
-  let order = { items:{}, totalPrice:0, slots:[], images:[] };
-  let profile = null;
-
-  window.onload = async () => {
-    // 渲染選單 (這裡用簡化版，請複製之前的完整版)
-    document.getElementById('menuList').innerHTML = '<p>請在此貼上完整的 renderList 程式碼</p>';
+    // ==========================================
+    // 【設定區】請填入您的資訊
+    // ==========================================
+    // 請填入您 GAS 部署後的「網頁應用程式網址」
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwiFBt0gazUG6yD9fGzTIzr9Ugh8mSQU3EVlXpS1ceKEsysoLGA_7GX-kYEsS09KvWoKA/exec"; 
     
-    await liff.init({ liffId: LIFF_ID });
-    if (liff.isLoggedIn()) {
-      profile = await liff.getProfile();
-      document.getElementById('userName').value = profile.displayName;
-    } else { liff.login(); }
-  };
+    // 請填入您的 LIFF ID
+    const LIFF_ID = "2008741256-7dO5Dfxz";
+    // ==========================================
 
-  function updateDistricts() {
-    let city = document.getElementById('city').value;
-    let dist = document.getElementById('district');
-    dist.innerHTML = '<option>區域</option>';
-    dist.disabled = false;
-    if(CITY_DATA[city]) CITY_DATA[city].forEach(d => dist.add(new Option(d,d)));
-  }
-
-  function handleFiles(files) {
-    if(order.images.length + files.length > 5) return alert('最多5張');
-    Array.from(files).forEach(f => {
-      let reader = new FileReader();
-      reader.readAsDataURL(f);
-      reader.onload = e => {
-        // 壓縮
-        let img = new Image(); img.src = e.target.result;
-        img.onload = () => {
-          let cvs = document.createElement('canvas');
-          let scale = 800/img.width;
-          cvs.width = 800; cvs.height = img.height*scale;
-          cvs.getContext('2d').drawImage(img,0,0,cvs.width,cvs.height);
-          let base64 = cvs.toDataURL('image/jpeg', 0.6);
-          order.images.push(base64);
-          document.getElementById('previewBox').innerHTML += `<img src="${base64}" class="img-preview">`;
-        }
-      }
-    });
-  }
-
-  function loadSlots() {
-    let d = document.getElementById('datePicker').value;
-    if(!d) return;
-    document.getElementById('slotBox').innerHTML = '載入中...';
-    // 呼叫 GAS (請複製之前的完整 loadSlots 邏輯)
-    google.script.run.withSuccessHandler(res => {
-        let html = '';
-        res.slots.forEach(s => {
-            html += `<div class="col-6"><button class="btn btn-outline-success slot-btn" onclick="toggleSlot('${d}','${s.time}',this)">${s.label}<span class="rank-badge"></span></button></div>`;
-        });
-        document.getElementById('slotBox').innerHTML = html;
-        // 恢復已選狀態
-        order.slots.forEach((sel, i) => {
-            if(sel.date === d) {
-                // 這裡需要較複雜的 DOM 查找，簡化版省略
-            }
-        });
-    }).getAvailableSlots(d, order.items);
-  }
-
-  function toggleSlot(date, time, btn) {
-    // 切換邏輯 (同前版)
-    let idx = order.slots.findIndex(s => s.date==date && s.time==time);
-    if(idx >= 0) { order.slots.splice(idx, 1); btn.classList.remove('active'); }
-    else {
-        if(order.slots.length >= 3) return alert('最多3個');
-        order.slots.push({date, time});
-        btn.classList.add('active');
-    }
-    document.getElementById('btnStep5').disabled = order.slots.length === 0;
-  }
-
-  function nextStep(step) {
-    document.querySelectorAll('.step').forEach(e=>e.classList.remove('active'));
-    document.getElementById('step'+step).classList.add('active');
-    if(step===5) {
-        document.getElementById('finalSlots').innerHTML = order.slots.map((s,i)=>`<li>順位${i+1}: ${s.date} ${s.time}</li>`).join('');
-    }
-  }
-
-  function submitOrder() {
-    let payload = {
-        userId: profile ? profile.userId : 'Guest',
-        name: document.getElementById('userName').value,
-        phone: document.getElementById('userPhone').value,
-        city: document.getElementById('city').value,
-        district: document.getElementById('district').value,
-        address: document.getElementById('userAddr').value,
-        items: order.items,
-        summary: '項目略', // 請補全
-        totalPrice: order.totalPrice, // 請補全
-        selectedSlots: order.slots,
-        images: order.images,
-        timeA: 0, timeB: 0 // 需從 loadSlots 取得
+    // 完整資料定義
+    const CITY_DATA = {
+        "台北市": ["中正區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"],
+        "新北市": ["板橋區", "新莊區", "中和區", "永和區", "土城區", "樹林區", "三峽區", "鶯歌區", "三重區", "蘆洲區", "五股區", "泰山區", "林口區", "淡水區", "汐止區", "深坑區", "石碇區", "瑞芳區", "萬里區", "金山區", "坪林區", "烏來區", "平溪區", "雙溪區", "貢寮區", "三芝區", "石門區", "八里區"],
+        "桃園市": ["桃園區", "中壢區", "大溪區", "楊梅區", "蘆竹區", "大園區", "龜山區", "八德區", "龍潭區", "平鎮區", "新屋區", "觀音區", "復興區"],
+        "其他縣市": []
     };
-    
-    Swal.showLoading();
-    google.script.run.withSuccessHandler(res => {
-        if(res.status === 'success') Swal.fire('成功','已送出','success').then(()=>liff.closeWindow());
-        else Swal.fire('失敗', res.msg, 'error');
-    }).submitOrder(payload);
-  }
+
+    const CATALOG = {
+        'A': {
+            'ac_split': { name: '分離式冷氣', time: 60, price: 2500 },
+            'ac_window': { name: '窗型冷氣', time: 45, price: 2000 },
+            'ac_hidden': { name: '吊隱式冷氣', time: 90, price: 3000 },
+            'wash_top': { name: '直立洗衣機', time: 90, price: 1500 },
+            'wash_drum': { name: '滾筒洗衣機', time: 150, price: 3500 }
+        },
+        'B': {
+            'sofa_1': { name: '洗沙發(單人)', time: 60, price: 1200 },
+            'sofa_2': { name: '洗沙發(雙人)', time: 90, price: 2000 },
+            'bed_1': { name: '洗床鋪(單人)', time: 60, price: 1500 },
+            'bed_2': { name: '洗床鋪(雙人)', time: 90, price: 2200 },
+            'mite': { name: '居家除塵蟎', time: 40, price: 1000 },
+            'bath': { name: '浴室清潔鍍膜', time: 120, price: 3000 }
+        }
+    };
+
+    // 全域變數
+    let currentStep = 1;
+    let order = {
+        items: {},       // 選購項目
+        totalPrice: 0,
+        totalTime: 0,
+        images: [],      // Base64 圖片陣列
+        slots: [],       // 選擇的時段
+        tempTimeA: 0,    // 從後端取得的工時驗證
+        tempTimeB: 0
+    };
+    let userProfile = null;
+
+    // 初始化
+    window.onload = async () => {
+        // 1. 渲染選單
+        renderMenu('A', 'content-a');
+        renderMenu('B', 'content-b');
+
+        // 2. 初始化 LIFF
+        try {
+            await liff.init({ liffId: LIFF_ID });
+            if (liff.isLoggedIn()) {
+                userProfile = await liff.getProfile();
+                document.getElementById('user-name').value = userProfile.displayName;
+            } else {
+                liff.login();
+            }
+        } catch (err) {
+            console.error('LIFF Init Error:', err);
+        }
+    };
+
+    // ==========================================
+    // 步驟 1: 地區邏輯
+    // ==========================================
+    function updateDistricts() {
+        const city = document.getElementById('city-select').value;
+        const distSelect = document.getElementById('district-select');
+        distSelect.innerHTML = '<option value="">請選擇區域</option>';
+        
+        if (city === "其他縣市") {
+            Swal.fire({ title: '提醒', text: '其他縣市將另收車馬費，師傅將另行報價。', icon: 'info' });
+            distSelect.innerHTML = '<option value="無">無</option>';
+            distSelect.disabled = false;
+            return;
+        }
+
+        if (CITY_DATA[city]) {
+            CITY_DATA[city].forEach(d => {
+                distSelect.add(new Option(d, d));
+            });
+            distSelect.disabled = false;
+        }
+        updateAddrPrefix();
+    }
+
+    function updateAddrPrefix() {
+        const c = document.getElementById('city-select').value;
+        const d = document.getElementById('district-select').value;
+        if(c && d) document.getElementById('addr-prefix').innerText = c + d;
+    }
+
+    // ==========================================
+    // 步驟 2: 選單渲染與計算
+    // ==========================================
+    function renderMenu(type, containerId) {
+        let html = '';
+        for (let key in CATALOG[type]) {
+            let item = CATALOG[type][key];
+            html += `
+            <div class="service-row">
+                <div class="service-info">
+                    <h6>${item.name}</h6>
+                    <small>$${item.price} / 約${item.time}分</small>
+                </div>
+                <div class="qty-control">
+                    <button class="qty-btn" onclick="changeQty('${key}', '${type}', -1)">-</button>
+                    <input type="text" class="qty-input" id="qty-${key}" value="0" readonly>
+                    <button class="qty-btn" onclick="changeQty('${key}', '${type}', 1)">+</button>
+                </div>
+            </div>`;
+        }
+        document.getElementById(containerId).innerHTML = html;
+    }
+
+    function changeQty(key, type, delta) {
+        let input = document.getElementById(`qty-${key}`);
+        let newVal = parseInt(input.value) + delta;
+        if (newVal < 0) newVal = 0;
+        input.value = newVal;
+        
+        // 更新訂單物件
+        order.items[key] = newVal;
+        calcTotal();
+    }
+
+    function calcTotal() {
+        let price = 0;
+        let time = 0;
+        for (let key in order.items) {
+            let qty = order.items[key];
+            if (qty > 0) {
+                // 檢查是 A 類還是 B 類
+                let item = CATALOG.A[key] || CATALOG.B[key];
+                if (item) {
+                    price += item.price * qty;
+                    time += item.time * qty;
+                }
+            }
+        }
+        order.totalPrice = price;
+        order.totalTime = time;
+        document.getElementById('total-price').innerText = price;
+        document.getElementById('total-time').innerText = time;
+    }
+
+    // ==========================================
+    // 步驟 3: 照片處理 (Canvas 壓縮)
+    // ==========================================
+    function handleFiles(files) {
+        if (order.images.length + files.length > 10) {
+            return Swal.fire('最多只能上傳 10 張照片');
+        }
+
+        Array.from(files).forEach(file => {
+            let reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                let img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    // 建立 Canvas 進行壓縮
+                    let canvas = document.createElement('canvas');
+                    let ctx = canvas.getContext('2d');
+                    
+                    // 設定最大寬度為 800px，保持比例
+                    let maxWidth = 800;
+                    let scale = 1;
+                    if (img.width > maxWidth) {
+                        scale = maxWidth / img.width;
+                    }
+                    
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+                    
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    // 轉為 Base64 (JPEG, 品質 0.7)
+                    let compressedData = canvas.toDataURL('image/jpeg', 0.7);
+                    
+                    order.images.push(compressedData);
+                    renderPreviews();
+                };
+            };
+        });
+    }
+
+    function renderPreviews() {
+        let container = document.getElementById('preview-area');
+        container.innerHTML = '';
+        order.images.forEach((src, idx) => {
+            let div = document.createElement('div');
+            div.className = 'img-box';
+            div.innerHTML = `
+                <img src="${src}">
+                <div class="btn-del-img" onclick="removeImage(${idx})">×</div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function removeImage(idx) {
+        order.images.splice(idx, 1);
+        renderPreviews();
+    }
+
+    // ==========================================
+    // 步驟 4: 取得時段 (Fetch API)
+    // ==========================================
+    function fetchSlots() {
+        let date = document.getElementById('date-picker').value;
+        if (!date) return;
+        
+        // 顯示載入中
+        document.getElementById('slots-container').innerHTML = '<div class="text-center w-100 py-4"><div class="spinner-border text-primary"></div><div class="mt-2 text-muted">正在查詢師傅行程...</div></div>';
+        document.getElementById('busy-hint').innerHTML = '';
+
+        // 準備送給 GAS 的資料 (action: 'getSlots')
+        let payload = {
+            action: 'getSlots',
+            date: date,
+            items: order.items
+        };
+
+        // 因為是跨網域 (GitHub -> GAS)，使用 Fetch POST
+        fetch(GAS_URL, {
+            method: 'POST',
+            mode: 'no-cors', // 重要：no-cors 模式下無法直接讀取 response，但 GAS 若是 Web App 可透過 redirect 或 text output 繞過，或是使用 ContentService + JSONP (較舊)。
+                             // 修正：標準 GAS + Fetch 最佳解法是使用 POST，但 GAS 必須回傳 ContentService。
+                             // 若遇到 CORS 問題，通常需要 GAS 支援 OPTIONS 或使用 redirect。
+                             // 為了確保這段能運作，建議使用 redirect follow 或 text/plain。
+            // ★ 注意：由於 no-cors 限制，前端無法讀取回傳值。
+            // 為了解決這個問題，標準做法是：
+            // 1. GAS deploy 為 "Anyone"
+            // 2. 前端使用 redirect: 'follow' (如果不跨域)
+            // 3. 但 GitHub -> Google 是跨域。
+            // ★ 修改策略：為了讓前端能讀到 Slots，我們改用 GET 請求帶參數 (JSONP 概念) 或者 POST 帶 stringify。
+            // 由於 Fetch 跨域讀取 GAS 回傳值極為困難，這裡改用 "doPost return JSON" 並配合 redirect 設定。
+            // 
+            // 更好的方式：send POST -> GAS 處理 -> return JSON. 
+            // 實際上 GAS 的 doPost 預設會 redirect，fetch 加上 redirect: 'follow' 即可讀取。
+            body: JSON.stringify(payload),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' } // 避開 preflight
+        })
+        .then(response => response.json()) // 嘗試解析 JSON
+        .then(res => {
+            renderSlots(res, date);
+        })
+        .catch(err => {
+            // 因為 fetch 跨域問題很常見，若失敗，我們模擬一個假的成功 (僅供 Demo 測試用)，
+            // 實務上請確保 GAS 回傳正確的 JSON 並且 fetch 能讀取。
+            // ★ 如果您的 GAS 設置正確，應該能讀到。如果讀不到，請檢查 GAS doPost 是否有 return ContentService...setMimeType(JSON)。
+            console.log("嘗試使用 fallback 模式", err);
+            
+            // 這裡為了讓您的 UI 能動，萬一 fetch 失敗，顯示錯誤提示
+            document.getElementById('slots-container').innerHTML = `<div class="alert alert-danger w-100">無法讀取時段，請檢查 GAS 網址與 CORS 設定。<br>錯誤: ${err}</div>`;
+        });
+    }
+
+    // 重新修正 fetchSlots：為了讓 GitHub 能順利拿到資料，建議改用 GET 請求帶參數 (doGet 在 GAS 處理 slots)
+    // 或者我們假設 POST 設置正確。這裡提供一個更穩定的 POST 寫法：
+    async function fetchSlots() {
+        let date = document.getElementById('date-picker').value;
+        if(!date) return;
+
+        document.getElementById('slots-container').innerHTML = '<div class="text-center w-100 py-4"><div class="spinner-border text-primary"></div></div>';
+        document.getElementById('busy-hint').innerHTML = '';
+
+        // 建立一個特殊的 payload (GAS doPost 需判斷 action)
+        let payload = JSON.stringify({
+            action: 'getSlots',
+            date: date,
+            items: order.items
+        });
+
+        try {
+            // 使用 POST 請求
+            const response = await fetch(GAS_URL, {
+                method: 'POST',
+                body: payload
+            });
+            const res = await response.json();
+            
+            // 渲染畫面
+            renderSlots(res, date);
+
+        } catch (error) {
+            console.error('Fetch error:', error);
+            // 為了不讓畫面卡住，這裡顯示一個錯誤訊息，或者如果是在測試階段，顯示模擬數據
+            document.getElementById('slots-container').innerHTML = `<div class="alert alert-danger w-100">讀取失敗 (CORS/Network)。請確認 GAS 網址正確。</div>`;
+        }
+    }
+
+    function renderSlots(res, date) {
+        // 1. 顯示師傅所在區域提示
+        if (res.busyInfo && res.busyInfo.length > 0) {
+            let regions = [...new Set(res.busyInfo.map(i => i.region).filter(r => r !== "已預約"))];
+            if (regions.length > 0) {
+                document.getElementById('busy-hint').innerHTML = `<span class="badge bg-warning text-dark">💡 師傅本日行程：${regions.join('、')}</span> (選同區優先排單)`;
+            }
+        }
+
+        // 2. 渲染按鈕
+        let html = '';
+        if (res.slots.length === 0) {
+            html = '<div class="alert alert-danger w-100">本日已額滿，請選別天。</div>';
+        } else {
+            res.slots.forEach(slot => {
+                // 檢查是否已選
+                let idx = order.slots.findIndex(s => s.date === date && s.time === slot.time);
+                let activeClass = (idx !== -1) ? 'active' : '';
+                let rank = (idx !== -1) ? (idx + 1) : '';
+                
+                html += `
+                <div class="col-6">
+                    <button class="btn btn-outline-primary slot-btn ${activeClass}" onclick="toggleSlot('${date}', '${slot.time}', this)">
+                        ${slot.label}
+                        <span class="rank-badge">${rank}</span>
+                    </button>
+                </div>`;
+            });
+        }
+        document.getElementById('slots-container').innerHTML = html;
+        
+        // 保存後端算出的時間 (供驗證)
+        order.tempTimeA = res.timeA || 0;
+        order.tempTimeB = res.timeB || 0;
+    }
+
+    function toggleSlot(date, time, btn) {
+        let idx = order.slots.findIndex(s => s.date === date && s.time === time);
+        
+        if (idx !== -1) {
+            // 已存在 -> 取消
+            order.slots.splice(idx, 1);
+        } else {
+            // 不存在 -> 新增
+            if (order.slots.length >= 3) {
+                return Swal.fire('最多選擇 3 個時段');
+            }
+            order.slots.push({ date: date, time: time });
+        }
+        // 重新渲染以更新順序數字
+        // 為了效能，這裡我們不重新 fetch，直接操作 DOM 可能較快，但為了順序正確，這裡簡單重新呼叫 render 邏輯 (需保存 res 狀態)
+        // 簡單做法：重新 fetch (雖然會閃一下)，或是手動更新 DOM class
+        // 這裡採用手動更新 DOM Class 視覺
+        updateSlotButtonsVisual(date);
+    }
+
+    function updateSlotButtonsVisual(date) {
+        let btns = document.querySelectorAll('.slot-btn');
+        btns.forEach(b => {
+            // 從按鈕文字判斷時間 (這裡簡化，實務上應綁定 data-time)
+            // 建議在 render 時加上 data-time="${slot.time}"
+            // 這裡簡單重整：
+            fetchSlots(); // 直接重抓最快確保 UI 同步
+        });
+    }
+
+    // ==========================================
+    // 流程控制
+    // ==========================================
+    function changeStep(delta) {
+        // 驗證邏輯
+        if (delta === 1) {
+            if (currentStep === 1) {
+                if (!document.getElementById('city-select').value || !document.getElementById('district-select').value) {
+                    return Swal.fire('請選擇完整地區');
+                }
+            }
+            if (currentStep === 2) {
+                if (order.totalPrice === 0) return Swal.fire('請至少選擇一項服務');
+            }
+            if (currentStep === 4) {
+                if (order.slots.length === 0) return Swal.fire('請至少選擇 1 個預約時段');
+                
+                // 準備 Step 5 的顯示資料
+                document.getElementById('final-item-list').innerText = getSummaryText();
+                document.getElementById('final-price').innerText = order.totalPrice;
+                document.getElementById('slot-count-display').innerText = order.slots.length;
+                document.getElementById('final-slot-list').innerHTML = order.slots.map((s, i) => `<li>順位 ${i+1}: ${s.date} ${s.time}</li>`).join('');
+            }
+        }
+
+        // 提交
+        if (currentStep === 5 && delta === 1) {
+            submitOrder();
+            return;
+        }
+
+        // 切換頁面
+        currentStep += delta;
+        document.querySelectorAll('.step-section').forEach(el => el.classList.remove('active'));
+        document.querySelector(`#step${currentStep}`).classList.add('active');
+
+        // 按鈕狀態
+        document.getElementById('btn-prev').disabled = (currentStep === 1);
+        document.getElementById('btn-next').innerText = (currentStep === 5) ? '確認送出' : '下一步';
+        
+        // 卷軸回到頂部
+        window.scrollTo(0, 0);
+    }
+
+    function getSummaryText() {
+        let arr = [];
+        for(let k in order.items) {
+            if(order.items[k] > 0) {
+                let name = (CATALOG.A[k] || CATALOG.B[k]).name;
+                arr.push(`${name} x${order.items[k]}`);
+            }
+        }
+        return arr.join(', ');
+    }
+
+    function submitOrder() {
+        let name = document.getElementById('user-name').value;
+        let phone = document.getElementById('user-phone').value;
+        let addr = document.getElementById('user-addr').value;
+
+        if (!name || !phone || !addr) return Swal.fire('請填寫完整聯絡資料');
+
+        // 顯示 Loading
+        document.getElementById('loading-overlay').style.display = 'flex';
+
+        let payload = {
+            action: 'submitOrder', // 告訴後端這是提交訂單
+            userId: userProfile ? userProfile.userId : 'Guest',
+            name: name,
+            phone: phone,
+            city: document.getElementById('city-select').value,
+            district: document.getElementById('district-select').value,
+            address: addr,
+            items: order.items,
+            summary: getSummaryText(),
+            totalPrice: order.totalPrice,
+            selectedSlots: order.slots,
+            images: order.images, // 這裡會包含 Base64，資料量較大
+            timeA: order.tempTimeA,
+            timeB: order.tempTimeB
+        };
+
+        fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(res => {
+            document.getElementById('loading-overlay').style.display = 'none';
+            if (res.status === 'success') {
+                Swal.fire({
+                    title: '預約成功！',
+                    text: '師傅確認後將透過 LINE 通知您。',
+                    icon: 'success'
+                }).then(() => {
+                    liff.closeWindow();
+                });
+            } else {
+                Swal.fire('失敗', res.msg || '未知錯誤', 'error');
+            }
+        })
+        .catch(err => {
+            document.getElementById('loading-overlay').style.display = 'none';
+            Swal.fire('連線錯誤', err.toString(), 'error');
+        });
+    }
+
 </script>
 </body>
 </html>
