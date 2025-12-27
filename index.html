@@ -33,7 +33,25 @@
             padding: 5px 1px; cursor: pointer; position: relative;
         }
         .cal-cell.today { border: 2px solid #0d6efd; }
-        .cal-cell.selected { background-color: #e7f1ff; border-color: #0d6efd; }
+        
+        /* ★ 修改：選中日期的樣式 (明顯標示) */
+        .cal-cell.selected { 
+            background-color: #0d6efd !important; 
+            border-color: #0d47a1; 
+            color: white;
+            box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+        }
+        .cal-cell.selected .cal-date { color: white; font-size: 1.1rem; }
+        .cal-cell.selected::after {
+            content: '✔';
+            position: absolute;
+            top: 2px; right: 2px;
+            font-size: 12px; color: white;
+            background: rgba(0,0,0,0.2);
+            border-radius: 50%; width: 16px; height: 16px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
         .cal-date { font-weight: bold; font-size: 0.9rem; margin-bottom: 2px; }
         .cal-badge { font-size: 0.65rem; padding: 2px 1px; border-radius: 3px; width: 98%; text-align: center; line-height: 1.1; word-break: break-all; }
         .cal-badge.region { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
@@ -65,6 +83,9 @@
                 <option value="" disabled selected>請選擇縣市</option>
             </select>
             <select id="district-select" class="form-select" disabled><option value="">請先選擇縣市</option></select>
+            <div id="other-city-alert" class="alert alert-warning mt-3" style="display:none;">
+                <small>⚠️ 選擇其他縣市可能會產生額外車馬費，請務必填寫完整地址以便評估。</small>
+            </div>
         </div></div>
     </div>
 
@@ -123,7 +144,7 @@
             <h5>5. 確認資料</h5>
             <input type="text" id="user-name" class="form-control mb-3" placeholder="稱呼">
             <input type="tel" id="user-phone" class="form-control mb-3" placeholder="電話">
-            <div class="input-group mb-3"><span class="input-group-text bg-light" id="addr-prefix"></span><input type="text" id="user-addr" class="form-control" placeholder="地址"></div>
+            <div class="input-group mb-3"><span class="input-group-text bg-light" id="addr-prefix"></span><input type="text" id="user-addr" class="form-control" placeholder="地址 (請填寫完整)"></div>
             <div class="bg-light p-3 rounded mb-3"><h6 class="fw-bold">已選時段</h6><ul id="final-slot-list" class="ps-3 mb-0 small"></ul></div>
             <div class="bg-light p-3 rounded"><div id="final-item-list" class="small text-muted"></div><div class="text-end fw-bold text-danger mt-1">總計: $<span id="final-price">0</span></div></div>
         </div></div>
@@ -137,12 +158,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // ================= 設定區 (請換成您的部署網址) =================
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyY0pXRGBVqrE3Qu6jueBG2q88Agng9TCRIccxTuUN7fnH2lrekv3IgyP4ga8zSuji3Cw/exec"; 
+    // ================= 設定區 =================
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxgQtJ_usIHMBkG6N9_P-Z0ktu_fOyP4gDdDPW1pVTeVbtoqDOZ7iM8e-Aj-W-wdpDw0A/exec"; 
     const LIFF_ID = "2008787455-1meqQHRA"; 
     // =========================================
 
-    // ★★★ 完整的縣市資料 ★★★
     const CITY_DATA = {
         "台北市": ["中正區","大同區","中山區","松山區","大安區","萬華區","信義區","士林區","北投區","內湖區","南港區","文山區"],
         "新北市": ["板橋區","三重區","中和區","永和區","新莊區","新店區","土城區","蘆洲區","樹林區","汐止區","鶯歌區","三峽區","淡水區","瑞芳區","五股區","泰山區","林口區","深坑區","石碇區","坪林區","三芝區","石門區","八里區","平溪區","雙溪區","貢寮區","金山區","萬里區","烏來區"],
@@ -180,13 +200,28 @@
         }
     }
 
+    // ★ 修改：新增「其他縣市」判斷與警告
     function updateDistricts(){ 
         const c=document.getElementById('city-select').value, d=document.getElementById('district-select'); 
         d.innerHTML='<option value="">請選區域</option>'; d.disabled=false;
-        if(c==='其他縣市'){ d.innerHTML='<option value="無">無</option>'; return; }
-        if(CITY_DATA[c]) CITY_DATA[c].forEach(x=>d.add(new Option(x,x)));
+        
+        const alertBox = document.getElementById('other-city-alert');
+        
+        if(c==='其他縣市'){ 
+            d.innerHTML='<option value="無">無</option>'; 
+            alertBox.style.display = 'block'; // 顯示警告
+            Swal.fire({
+                icon: 'warning',
+                title: '注意',
+                text: '您選擇了其他縣市，可能會有額外的車馬費，專人將與您聯繫報價。'
+            });
+        } else {
+            alertBox.style.display = 'none'; // 隱藏警告
+            if(CITY_DATA[c]) CITY_DATA[c].forEach(x=>d.add(new Option(x,x)));
+        }
         updateAddrPrefix();
     }
+    
     function updateAddrPrefix(){ const c=document.getElementById('city-select').value,d=document.getElementById('district-select').value; if(c&&d)document.getElementById('addr-prefix').innerText=c+d; }
 
     function renderMenu(type,id){
@@ -294,8 +329,8 @@
                 document.getElementById('final-price').innerText = order.totalPrice;
                 document.getElementById('final-slot-list').innerHTML = order.slots.map((s,i)=>`<li>順位${i+1}: ${s.date} ${s.time}</li>`).join('');
             }
+            if(currentStep===5 && d===1) { submitOrder(); return; }
         }
-        if(currentStep===5 && d===1) { submitOrder(); return; }
         currentStep+=d;
         document.querySelectorAll('.step-section').forEach(e=>e.classList.remove('active'));
         document.getElementById(`step${currentStep}`).classList.add('active');
@@ -307,14 +342,22 @@
 
     function submitOrder(){
         let n=document.getElementById('user-name').value, p=document.getElementById('user-phone').value, a=document.getElementById('user-addr').value;
+        
+        // ★ 修改：其他縣市時的地址驗證
+        let city = document.getElementById('city-select').value;
+        if(city === '其他縣市' && a.length < 5) {
+            return Swal.fire('請填寫完整地址', '選擇其他縣市時，請務必填寫詳細地址以便我們評估車馬費。', 'warning');
+        }
+        
         if(!n||!p||!a) return Swal.fire('請填完整資料');
+        
         document.getElementById('loading-overlay').style.display='flex';
         fetch(GAS_URL, {
             method:'POST',
             body:JSON.stringify({
                 action:'submitOrder', 
                 userId: userProfile ? userProfile.userId : 'Guest',
-                name:n, phone:p, city:document.getElementById('city-select').value, district:document.getElementById('district-select').value, address:a,
+                name:n, phone:p, city:city, district:document.getElementById('district-select').value, address:a,
                 items:order.items, summary:document.getElementById('final-item-list').innerText, totalPrice:order.totalPrice,
                 selectedSlots:order.slots, images:order.images, timeA:order.tempTimeA, timeB:order.tempTimeB
             })
@@ -329,9 +372,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
-
