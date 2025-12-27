@@ -30,7 +30,7 @@
         .cal-day-header { text-align: center; font-size: 0.8rem; font-weight: bold; color: #666; padding-bottom: 5px; }
         .cal-cell { 
             background: #fff; border: 1px solid #dee2e6; border-radius: 5px; 
-            min-height: 65px; /* 加高一點以容納兩行字 */
+            min-height: 65px; 
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
             padding: 5px 1px; cursor: pointer; position: relative;
         }
@@ -38,7 +38,7 @@
         .cal-cell.selected { background-color: #e7f1ff; border-color: #0d6efd; }
         .cal-date { font-weight: bold; font-size: 0.9rem; margin-bottom: 2px; }
         
-        /* 關鍵：地區標籤樣式 (支援換行) */
+        /* 地區標籤樣式 */
         .cal-badge { 
             font-size: 0.65rem; 
             padding: 2px 1px; 
@@ -121,7 +121,7 @@
             
             <div class="calendar-controls">
                 <div class="btn-cal-nav" onclick="changeMonth(-1)">&#10094;</div>
-                <div class="current-month-label" id="cal-month-label">2025年 1月</div>
+                <div class="current-month-label" id="cal-month-label"></div>
                 <div class="btn-cal-nav" onclick="changeMonth(1)">&#10095;</div>
             </div>
 
@@ -159,8 +159,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // ================= 設定區 =================
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxOn7qakkTWSj792lEEZbf3Bi5pb3NXLpnOE3ao28d-Ye8vyziraSVIpPQkpnaQPBsoUA/exec"; 
+    // ================= 設定區 (請換成您的部署網址) =================
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwxa188LKNrEfHbyN0rxZ4BVT8O5n_DWnwMuEb0pmZSGsu_J3lCto3cH57bILB495P9-Q/exec"; 
     const LIFF_ID = "2008741256-7dO5Dfxz"; 
     // =========================================
 
@@ -173,11 +173,18 @@
     let currentStep = 1;
     let order = { items:{}, totalPrice:0, totalTime:0, images:[], slots:[], tempTimeA:0, tempTimeB:0 };
     let userProfile = null;
-    let viewDate = new Date(); // 目前日曆檢視的日期
+    let viewDate = new Date(); 
 
     window.onload = async () => {
         renderMenu('A','content-a'); renderMenu('B','content-b');
-        try { await liff.init({liffId:LIFF_ID}); if(liff.isLoggedIn()){ userProfile=await liff.getProfile(); document.getElementById('user-name').value=userProfile.displayName; } else liff.login(); } catch(e){}
+        try { 
+            await liff.init({liffId:LIFF_ID}); 
+            if(liff.isLoggedIn()){ 
+                userProfile=await liff.getProfile(); 
+                document.getElementById('user-name').value=userProfile.displayName; 
+            } else liff.login(); 
+        } catch(e){ console.log("LIFF Error:", e); }
+        loadMonthSchedule(); // 預載日曆
     };
 
     function updateDistricts(){ 
@@ -232,11 +239,6 @@
         });
     }
 
-    // ★★★ 日曆邏輯 (翻頁版) ★★★
-    function initCalendar(){
-        loadMonthSchedule();
-    }
-    
     function changeMonth(delta) {
         viewDate.setMonth(viewDate.getMonth() + delta);
         loadMonthSchedule();
@@ -245,15 +247,12 @@
     function loadMonthSchedule() {
         let year = viewDate.getFullYear();
         let month = viewDate.getMonth();
-        
         document.getElementById('cal-month-label').innerText = `${year}年 ${month+1}月`;
         document.getElementById('calendar-body').innerHTML = '<div class="text-center w-100 py-3" style="grid-column: 1/-1"><div class="spinner-border text-primary"></div></div>';
 
         fetch(GAS_URL, {method:'POST', body:JSON.stringify({action:'getBusySchedule', year: year, month: month})})
         .then(r=>r.json())
-        .then(res=>{
-            renderCalendarGrid(year, month, res);
-        })
+        .then(res=>{ renderCalendarGrid(year, month, res); })
         .catch(e=>document.getElementById('calendar-body').innerHTML='<div class="text-danger p-3" style="grid-column:1/-1">載入失敗</div>');
     }
 
@@ -261,31 +260,17 @@
         let html = '';
         let firstDay = new Date(year, month, 1).getDay();
         let daysInMonth = new Date(year, month + 1, 0).getDate();
-        
-        // 補空白格
         for(let i=0; i<firstDay; i++){ html += `<div class="cal-cell" style="background:#f9f9f9;cursor:default;"></div>`; }
 
         for(let i=1; i<=daysInMonth; i++){
             let d = new Date(year, month, i);
-            // 修正時區偏移問題，確保字串為 yyyy-MM-dd
             let y = d.getFullYear();
             let m = (d.getMonth()+1).toString().padStart(2,'0');
             let day = d.getDate().toString().padStart(2,'0');
             let dateStr = `${y}-${m}-${day}`;
-            
             let regions = busyMap[dateStr] || [];
-            
-            // ★ 換行顯示：將空格替換為 <br>
-            let badgeHtml = regions.map(r => {
-                let displayR = r.replace(' ', '<br>'); 
-                return `<div class="cal-badge region">${displayR}</div>`;
-            }).join('');
-            
-            html += `
-            <div class="cal-cell" onclick="selectDate('${dateStr}', this)">
-                <div class="cal-date">${i}</div>
-                ${badgeHtml}
-            </div>`;
+            let badgeHtml = regions.map(r => `<div class="cal-badge region">${r.replace(' ', '<br>')}</div>`).join('');
+            html += `<div class="cal-cell" onclick="selectDate('${dateStr}', this)"><div class="cal-date">${i}</div>${badgeHtml}</div>`;
         }
         document.getElementById('calendar-body').innerHTML = html;
     }
@@ -293,7 +278,6 @@
     function selectDate(dateStr, el){
         document.querySelectorAll('.cal-cell').forEach(c=>c.classList.remove('selected'));
         el.classList.add('selected');
-        
         document.getElementById('time-slot-section').style.display='block';
         document.getElementById('selected-date-display').innerText = dateStr;
         document.getElementById('slots-container').innerHTML='<div class="text-center w-100 py-3"><div class="spinner-border text-primary"></div></div>';
@@ -348,6 +332,11 @@
         if(currentStep===4) initCalendar();
         window.scrollTo(0,0);
     }
+    
+    function initCalendar(){
+        // 切換到步驟4時，刷新日曆確保資料最新
+        loadMonthSchedule();
+    }
 
     function submitOrder(){
         let n=document.getElementById('user-name').value, p=document.getElementById('user-phone').value, a=document.getElementById('user-addr').value;
@@ -357,7 +346,8 @@
         fetch(GAS_URL, {
             method:'POST',
             body:JSON.stringify({
-                action:'submitOrder', userId:userProfile?userProfile.userId:'Guest',
+                action:'submitOrder', 
+                userId: userProfile ? userProfile.userId : 'Guest', // 這裡會傳送 userId 給後端寫入 Sheet
                 name:n, phone:p, city:document.getElementById('city-select').value, district:document.getElementById('district-select').value, address:a,
                 items:order.items, summary:document.getElementById('final-item-list').innerText, totalPrice:order.totalPrice,
                 selectedSlots:order.slots, images:order.images, timeA:order.tempTimeA, timeB:order.tempTimeB
@@ -366,7 +356,7 @@
         .then(r=>r.json())
         .then(res=>{
             document.getElementById('loading-overlay').style.display='none';
-            if(res.status==='success') Swal.fire('成功','已通知師傅','success').then(()=>liff.closeWindow());
+            if(res.status==='success') Swal.fire('成功','已通知師傅，請留意LINE通知','success').then(()=>liff.closeWindow());
             else Swal.fire('失敗',res.msg,'error');
         })
         .catch(e=>{
@@ -377,4 +367,3 @@
 </script>
 </body>
 </html>
-
