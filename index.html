@@ -251,29 +251,61 @@
     }
 
     function selectDate(dateStr, el){
-        // UI 變色
+        // 1. UI 變色處理
         document.querySelectorAll('.cal-cell').forEach(c=>c.classList.remove('selected'));
         el.classList.add('selected');
         
         document.getElementById('time-slot-section').style.display='block';
         document.getElementById('selected-date-display').innerText = dateStr;
         
-        // 載入該日詳細時段
-        document.getElementById('slots-container').innerHTML='<div class="text-center w-100 py-3"><div class="spinner-border text-primary"></div></div>';
+        // 2. 顯示載入中
+        document.getElementById('slots-container').innerHTML='<div class="text-center w-100 py-3"><div class="spinner-border text-primary"></div><div class="mt-2 text-muted">查詢空檔中...</div></div>';
         
-        fetch(GAS_URL, {method:'POST', body:JSON.stringify({action:'getSlots', date:dateStr, items:order.items})})
-        .then(r=>r.json())
-        .then(res=>{
+        // 3. 發送請求
+        fetch(GAS_URL, {
+            method: 'POST', 
+            body: JSON.stringify({
+                action: 'getSlots', 
+                date: dateStr, 
+                items: order.items // 傳送已選的項目以計算工時
+            })
+        })
+        .then(r => r.json())
+        .then(res => {
+            // 檢查是否有後端錯誤
+            if(res.status === 'error') {
+                document.getElementById('slots-container').innerHTML=`<div class="alert alert-danger">${res.msg}</div>`;
+                return;
+            }
+
             let h='';
-            if(res.slots.length===0) h='<div class="alert alert-danger w-100">本日已滿</div>';
-            else res.slots.forEach(s=>{
-                let active = order.slots.some(x=>x.date===dateStr && x.time===s.time) ? 'active' : '';
-                let rank = active ? order.slots.findIndex(x=>x.date===dateStr && x.time===s.time)+1 : '';
-                h+=`<div class="col-6"><button class="slot-btn ${active}" onclick="toggleSlot('${dateStr}','${s.time}',this)">${s.label}<span class="rank-badge">${rank}</span></button></div>`;
-            });
+            if(res.slots.length===0) {
+                h='<div class="alert alert-danger w-100">本日師傅行程已滿，請選擇其他日期</div>';
+            } else {
+                res.slots.forEach(s => {
+                    // 檢查是否已選過 (保留UI狀態)
+                    let active = order.slots.some(x=>x.date===dateStr && x.time===s.time) ? 'active' : '';
+                    let rank = active ? order.slots.findIndex(x=>x.date===dateStr && x.time===s.time)+1 : '';
+                    let style = active ? 'display:block' : '';
+                    
+                    h+=`
+                    <div class="col-6">
+                        <button class="slot-btn ${active}" onclick="toggleSlot('${dateStr}','${s.time}',this)">
+                            ${s.label}
+                            <span class="rank-badge" style="${style}">${rank}</span>
+                        </button>
+                    </div>`;
+                });
+            }
             document.getElementById('slots-container').innerHTML = h;
-            // 保存當天算出來的後端工時 (雖然每次點不同天可能有些微差異，但基本上項目一樣工時就一樣)
-            order.tempTimeA = res.timeA; order.tempTimeB = res.timeB; 
+            
+            // 保存後端計算的時間 (驗證用)
+            order.tempTimeA = res.timeA; 
+            order.tempTimeB = res.timeB; 
+        })
+        .catch(e => {
+            console.error(e);
+            document.getElementById('slots-container').innerHTML=`<div class="alert alert-danger">連線錯誤: 請確認 GAS 網址是否正確，並已重新部署。<br><small>${e}</small></div>`;
         });
     }
 
@@ -342,3 +374,4 @@
 </script>
 </body>
 </html>
+
