@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>專業清潔預約系統</title>
+    <title>勝潔實-居家清潔預約系統</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -14,7 +14,6 @@
         .step-section.active { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        /* UI 優化 */
         .nav-tabs .nav-link.active { font-weight: bold; color: #0d6efd; border-bottom: 3px solid #0d6efd; }
         .service-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-bottom: 1px solid #eee; }
         .qty-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ddd; background: white; color: #0d6efd; }
@@ -33,24 +32,22 @@
             padding: 5px 1px; cursor: pointer; position: relative;
         }
         .cal-cell.today { border: 2px solid #0d6efd; }
-        
-        /* ★ 修改：選中日期的樣式 (明顯標示) */
         .cal-cell.selected { 
-            background-color: #0d6efd !important; 
-            border-color: #0d47a1; 
-            color: white;
+            background-color: #0d6efd !important; border-color: #0d47a1; color: white;
             box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
         }
         .cal-cell.selected .cal-date { color: white; font-size: 1.1rem; }
         .cal-cell.selected::after {
-            content: '✔';
-            position: absolute;
-            top: 2px; right: 2px;
-            font-size: 12px; color: white;
-            background: rgba(0,0,0,0.2);
-            border-radius: 50%; width: 16px; height: 16px;
-            display: flex; align-items: center; justify-content: center;
+            content: '✔'; position: absolute; top: 2px; right: 2px;
+            font-size: 12px; color: white; background: rgba(0,0,0,0.2);
+            border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
         }
+
+        /* ★ 新增：過期日期樣式 */
+        .cal-cell.disabled { 
+            background-color: #f2f2f2; color: #ccc; cursor: not-allowed; border-color: #eee;
+        }
+        .cal-cell.disabled .cal-badge { opacity: 0.5; }
 
         .cal-date { font-weight: bold; font-size: 0.9rem; margin-bottom: 2px; }
         .cal-badge { font-size: 0.65rem; padding: 2px 1px; border-radius: 3px; width: 98%; text-align: center; line-height: 1.1; word-break: break-all; }
@@ -119,7 +116,10 @@
     <div id="step4" class="step-section">
         <div class="card shadow-sm border-0"><div class="card-body p-2">
             <h5>4. 選擇預約日期</h5>
-            <div class="alert alert-warning small py-1">點選日期查看可預約時段。</div>
+            <div class="alert alert-warning small py-1">
+                請選擇 3 個時段。<br>
+                <b>小提醒：</b>盡可能選擇相同縣市地區的日期，能加速師傅安排時間喔！
+            </div>
             <div class="calendar-controls">
                 <div class="btn-cal-nav" onclick="changeMonth(-1)">&#10094;</div>
                 <div class="current-month-label" id="cal-month-label"></div>
@@ -159,7 +159,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // ================= 設定區 =================
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbw0ktpLZXfhQx-pbgCmit7BaNAAaMC-h93oNeyF1eOF0BxcIoN3H99a9P08yNxFmlgc2Q/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycby4Ig-BcLqFEEOjOwJoFerGGdiztA_hGpZdKRSFor9_JGaqUVbTV7uE1hboPCzLvFw3GQ/exec"; 
     const LIFF_ID = "2008787455-1meqQHRA"; 
     // =========================================
 
@@ -200,29 +200,31 @@
         }
     }
 
-    // ★ 修改：新增「其他縣市」判斷與警告
     function updateDistricts(){ 
         const c=document.getElementById('city-select').value, d=document.getElementById('district-select'); 
         d.innerHTML='<option value="">請選區域</option>'; d.disabled=false;
         
         const alertBox = document.getElementById('other-city-alert');
-        
         if(c==='其他縣市'){ 
             d.innerHTML='<option value="無">無</option>'; 
-            alertBox.style.display = 'block'; // 顯示警告
-            Swal.fire({
-                icon: 'warning',
-                title: '注意',
-                text: '您選擇了其他縣市，可能會有額外的車馬費，專人將與您聯繫報價。'
-            });
+            alertBox.style.display = 'block'; 
+            Swal.fire({ icon: 'warning', title: '注意', text: '您選擇了其他縣市，可能會有額外的車馬費，專人將與您聯繫報價。' });
         } else {
-            alertBox.style.display = 'none'; // 隱藏警告
+            alertBox.style.display = 'none'; 
             if(CITY_DATA[c]) CITY_DATA[c].forEach(x=>d.add(new Option(x,x)));
         }
         updateAddrPrefix();
     }
     
-    function updateAddrPrefix(){ const c=document.getElementById('city-select').value,d=document.getElementById('district-select').value; if(c&&d)document.getElementById('addr-prefix').innerText=c+d; }
+    // ★ 修改：如果區域是「無」，則顯示為空字串
+    function updateAddrPrefix(){ 
+        const c=document.getElementById('city-select').value;
+        const d=document.getElementById('district-select').value; 
+        if(c&&d) {
+            let displayDistrict = (d === '無') ? '' : d;
+            document.getElementById('addr-prefix').innerText = c + displayDistrict; 
+        }
+    }
 
     function renderMenu(type,id){
         let h=''; 
@@ -277,14 +279,26 @@
         .catch(e=>document.getElementById('calendar-body').innerHTML='<div class="text-danger p-3" style="grid-column:1/-1">載入失敗</div>');
     }
 
+    // ★ 修改：反灰過期日期
     function renderCalendarGrid(year, month, busyMap){
         let html = '', firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        let today = new Date();
+        today.setHours(0,0,0,0); // 設定為今天凌晨，方便比較
+
         for(let i=0; i<firstDay; i++){ html += `<div class="cal-cell" style="background:#f9f9f9;cursor:default;"></div>`; }
         for(let i=1; i<=daysInMonth; i++){
-            let d = new Date(year, month, i), dateStr = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
+            let d = new Date(year, month, i);
+            let dateStr = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
             let regions = busyMap[dateStr] || [];
             let badgeHtml = regions.map(r => `<div class="cal-badge region">${r.replace(' ', '<br>')}</div>`).join('');
-            html += `<div class="cal-cell" onclick="selectDate('${dateStr}', this)"><div class="cal-date">${i}</div>${badgeHtml}</div>`;
+            
+            // 判斷是否過期
+            if (d < today) {
+                html += `<div class="cal-cell disabled"><div class="cal-date">${i}</div>${badgeHtml}</div>`;
+            } else {
+                html += `<div class="cal-cell" onclick="selectDate('${dateStr}', this)"><div class="cal-date">${i}</div>${badgeHtml}</div>`;
+            }
         }
         document.getElementById('calendar-body').innerHTML = html;
     }
@@ -308,13 +322,43 @@
         });
     }
 
+    // ★ 修改：選擇後提示下一步
     function toggleSlot(d, t, btn){
         let idx = order.slots.findIndex(s=>s.date===d && s.time===t);
-        if(idx!==-1){ order.slots.splice(idx,1); btn.classList.remove('active'); btn.querySelector('.rank-badge').style.display='none'; }
-        else{
+        if(idx!==-1){ 
+            order.slots.splice(idx,1); 
+            btn.classList.remove('active'); 
+            btn.querySelector('.rank-badge').style.display='none'; 
+        } else {
             if(order.slots.length>=3) return Swal.fire('最多3個時段');
             order.slots.push({date:d, time:t});
-            btn.classList.add('active'); btn.querySelector('.rank-badge').innerText = order.slots.length; btn.querySelector('.rank-badge').style.display='block';
+            btn.classList.add('active'); 
+            btn.querySelector('.rank-badge').innerText = order.slots.length; 
+            btn.querySelector('.rank-badge').style.display='block';
+
+            // 提示引導
+            let currentCount = order.slots.length;
+            if(currentCount < 3) {
+                 Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: `已選第 ${currentCount} 順位`,
+                    text: `請繼續選擇第 ${currentCount + 1} 順位`,
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            } else {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: '3個時段選擇完畢！',
+                    text: '請點擊下一步確認資料',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            }
         }
     }
 
@@ -342,12 +386,8 @@
 
     function submitOrder(){
         let n=document.getElementById('user-name').value, p=document.getElementById('user-phone').value, a=document.getElementById('user-addr').value;
-        
-        // ★ 修改：其他縣市時的地址驗證
         let city = document.getElementById('city-select').value;
-        if(city === '其他縣市' && a.length < 5) {
-            return Swal.fire('請填寫完整地址', '選擇其他縣市時，請務必填寫詳細地址以便我們評估車馬費。', 'warning');
-        }
+        if(city === '其他縣市' && a.length < 5) return Swal.fire('請填寫完整地址', '選擇其他縣市時，請務必填寫詳細地址以便我們評估車馬費。', 'warning');
         
         if(!n||!p||!a) return Swal.fire('請填完整資料');
         
@@ -372,5 +412,3 @@
 </script>
 </body>
 </html>
-
-
