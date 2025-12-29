@@ -78,7 +78,7 @@
 
 <div id="promo-overlay">
     <div id="promo-content">
-        <img src="https://drive.usercontent.google.com/download?id=1-VK_YEuoCC1uQ2k_QtozXWl7srnTmBv3&export=view&authuser=0" alt="2026年優惠活動">
+        <img src="https://drive.google.com/uc?export=view&id=1kKqVqXXXXX_請換成您的ID" alt="2026年優惠活動">
     </div>
 </div>
 
@@ -177,7 +177,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // ================= 設定區 =================
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwgFFyV8KlNfSRzRjVU_7kCHvvjHauWRJoonb_GUt9soRricWyS1gpeN7-jJU4MjECdWA/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzdWguCDsaqXUX3B9NpewuVlHS0q4aje3xiLVREN7NPo4rpUVveohIo5oo6FFRyINmrAg/exec"; 
     const LIFF_ID = "2008787455-1meqQHRA"; 
     // =========================================
 
@@ -304,7 +304,6 @@
 
     function changeMonth(delta) { viewDate.setMonth(viewDate.getMonth() + delta); loadMonthSchedule(); }
     
-    // ★ 修改：發送 items 給後端計算空檔
     function loadMonthSchedule() {
         let year = viewDate.getFullYear(), month = viewDate.getMonth();
         document.getElementById('cal-month-label').innerText = `${year}年 ${month+1}月`;
@@ -313,18 +312,18 @@
             action:'getBusySchedule', 
             year: year, 
             month: month,
-            items: order.items // 傳入項目以計算工時
+            items: order.items 
         })})
         .then(r=>r.json()).then(res=>{ renderCalendarGrid(year, month, res); })
         .catch(e=>document.getElementById('calendar-body').innerHTML='<div class="text-danger p-3" style="grid-column:1/-1">載入失敗</div>');
     }
 
-    // ★ 修改：渲染日曆 (額滿判斷 + 寬鬆推薦)
+    // ★ 修改：渲染日曆 (額滿與推薦邏輯)
     function renderCalendarGrid(year, month, busyMap){
         let html = '', firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
         let today = new Date(); today.setHours(0,0,0,0);
         
-        let userCity = document.getElementById('city-select').value; // 只抓縣市
+        let userCity = document.getElementById('city-select').value; 
 
         for(let i=0; i<firstDay; i++){ html += `<div class="cal-cell" style="background:#f9f9f9;cursor:default;"></div>`; }
         
@@ -332,27 +331,28 @@
             let d = new Date(year, month, i);
             let dateStr = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
             
-            // 後端回傳格式: { regions: ['台北市大安區'], hasSlot: true/false }
             let data = busyMap[dateStr] || { regions: [], hasSlot: true }; 
             let regions = data.regions;
             let hasSlot = data.hasSlot;
 
             let badgeHtml = regions.map(r => `<div class="cal-badge region">${r.replace(' ', '<br>')}</div>`).join('');
             
-            // 推薦邏輯：有行程 且 地區開頭是使用者選的縣市 (例如 "新北市" 開頭)
+            // ★ 修改推薦條件：
+            // 1. 日期未過期
+            // 2. 有行程 (regions.length > 0)
+            // 3. 有空檔 (hasSlot === true)
+            // 4. 地區開頭符合縣市
             let recommendTag = '';
-            if (d >= today && regions.length > 0 && userCity && userCity !== '其他縣市') {
+            if (d >= today && regions.length > 0 && hasSlot && userCity && userCity !== '其他縣市') {
                 let isMatch = regions.some(r => r.startsWith(userCity));
                 if (isMatch) {
                     recommendTag = `<div class="cal-tag-recommend">推</div>`;
                 }
             }
 
-            // 判斷順序：1.過期 2.額滿 3.正常
             if (d < today) {
                 html += `<div class="cal-cell disabled"><div class="cal-date">${i}</div>${badgeHtml}</div>`;
             } else if (!hasSlot) {
-                // 額滿樣式
                 html += `<div class="cal-cell disabled" style="background:#fff0f0; border-color:#ffcccc;">
                             <div class="cal-date text-danger">${i}</div>
                             <div style="font-size:10px; color:red; font-weight:bold;">已滿</div>
