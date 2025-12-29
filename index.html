@@ -16,7 +16,6 @@
         
         .nav-tabs .nav-link.active { font-weight: bold; color: #0d6efd; border-bottom: 3px solid #0d6efd; }
         .service-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-bottom: 1px solid #eee; }
-        .qty-control { display: flex; align-items: center; }
         .qty-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ddd; background: white; color: #0d6efd; font-weight: bold; }
         .qty-input { width: 35px; text-align: center; border: none; background: transparent; font-weight: bold; }
         
@@ -34,6 +33,7 @@
         .current-month-label { font-weight: bold; font-size: 1.1rem; color: #0d6efd; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         .cal-day-header { text-align: center; font-size: 0.8rem; font-weight: bold; color: #666; padding-bottom: 5px; }
+        
         .cal-cell { 
             background: #fff; border: 1px solid #dee2e6; border-radius: 5px; min-height: 65px; 
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
@@ -43,6 +43,20 @@
         .cal-cell.selected { background-color: #0d6efd !important; border-color: #0d47a1; color: white; box-shadow: 0 0 5px rgba(13, 110, 253, 0.5); }
         .cal-cell.selected::after { content: '✔'; position: absolute; top: 2px; right: 2px; font-size: 12px; color: white; background: rgba(0,0,0,0.2); border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
         .cal-cell.disabled { background-color: #f2f2f2; color: #ccc; cursor: not-allowed; border-color: #eee; }
+        
+        /* ★ 新增：推薦標章樣式 (推) */
+        .cal-tag-recommend {
+            position: absolute; top: -5px; left: -5px;
+            background: #ff3333; color: white;
+            border-radius: 50%; width: 22px; height: 22px;
+            font-size: 12px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.3); z-index: 10;
+            border: 2px solid white;
+            animation: popIn 0.3s ease-out;
+        }
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
         .cal-date { font-weight: bold; font-size: 0.9rem; margin-bottom: 2px; }
         .cal-badge { font-size: 0.65rem; padding: 2px 1px; border-radius: 3px; width: 98%; text-align: center; line-height: 1.1; word-break: break-all; }
         .cal-badge.region { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
@@ -66,7 +80,7 @@
 
 <div id="promo-overlay">
     <div id="promo-content">
-        <img src="https://drive.google.com/drive/folders/159QxQ1DIdQ5QOrIyrvjEGLnDX1GTP-kN?dmr=1&ec=wgc-drive-hero-goto" alt="2026年優惠活動">
+        <img src="https://drive.google.com/uc?export=view&id=1-VK_YEuoCC1uQ2k_QtozXWl7srnTmBv3" alt="2026年優惠活動">
     </div>
 </div>
 
@@ -123,7 +137,7 @@
             <h5>4. 選擇預約日期</h5>
             <div class="alert alert-warning small py-1">
                 請選擇 <b>3 個時段</b>。<br>
-                <b>開放時間：</b>平日 09:00~14:30 | 假日 09:00~19:00
+                <span class="badge bg-danger rounded-circle">推</span> 代表師傅當天已在同區域，安排最快！
             </div>
             <div class="calendar-controls">
                 <div class="btn-cal-nav" onclick="changeMonth(-1)">&#10094;</div>
@@ -165,7 +179,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // ================= 設定區 =================
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxbbqpETuIoK5v2a9eTwtGlWczs-BpqRUVBd8PKX2vtwfT0QhvPkZf6_f7dLAYBVFgiMg/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbztiQ4QdoXPX76w_wFTdKMa8dusiXvh0U3OwkfbW-7KFaGxmbnNVVsLbsF5UTAHMOOv5g/exec"; 
     const LIFF_ID = "2008787455-1meqQHRA"; 
     // =========================================
 
@@ -176,37 +190,16 @@
         "其他縣市": []
     };
 
-    // ★ 更新：價目表 (對應您提供的新價格)
     const CATALOG = { 
-        'A': { 
-            'ac_split':{n:'分離式冷氣',t:60,p:2000}, // 基礎價2000, 程式會自動算優惠
-            'ac_window':{n:'窗型冷氣',t:120,p:3500}, 
-            'ac_hidden':{n:'吊隱式冷氣',t:120,p:3000}, // 取區間低標
-            'ac_4way':{n:'四方吹冷氣',t:150,p:4500},
-            'wash_top':{n:'直立洗衣機',t:90,p:1500}, 
-            'wash_drum':{n:'滾筒洗衣機',t:180,p:3500} 
-        },
-        'B': { 
-            'bath':{n:'浴室鍍膜(間)',t:210,p:4500},
-            'bed_1':{n:'洗床(單人)',t:180,p:1500},
-            'bed_2':{n:'洗床(雙人)',t:180,p:2500},
-            'sofa_1':{n:'洗沙發(單人)',t:120,p:1500}, 
-            'sofa_2':{n:'洗沙發(雙人)',t:120,p:2000}, 
-            'sofa_all':{n:'洗沙發(全組)',t:120,p:3500},
-            'mite_home':{n:'居家除塵蟎(間)',t:60,p:2000},
-            'mite_sofa_1':{n:'除蟎-沙發(單)',t:60,p:600},
-            'mite_sofa_2':{n:'除蟎-沙發(雙)',t:60,p:1000},
-            'mite_sofa_l':{n:'除蟎-沙發(L型)',t:60,p:1500},
-            'mite_bed_1':{n:'除蟎-床(單)',t:60,p:600},
-            'mite_bed_2':{n:'除蟎-床(雙)',t:60,p:1200}
-        }
+        'A': { 'ac_split':{n:'分離式冷氣',t:60,p:2000}, 'ac_window':{n:'窗型冷氣',t:120,p:3500}, 'ac_hidden':{n:'吊隱式冷氣',t:120,p:3000}, 'ac_4way':{n:'四方吹冷氣',t:150,p:4500}, 'wash_top':{n:'直立洗',t:90,p:1500}, 'wash_drum':{n:'滾筒洗',t:180,p:3500} },
+        'B': { 'bath':{n:'浴室鍍膜(間)',t:210,p:4500}, 'bed_1':{n:'洗床(單人)',t:180,p:1500}, 'bed_2':{n:'洗床(雙人)',t:180,p:2500}, 'sofa_1':{n:'洗沙發(單人)',t:120,p:1500}, 'sofa_2':{n:'洗沙發(雙人)',t:120,p:2000}, 'sofa_all':{n:'洗沙發(全組)',t:120,p:3500}, 'mite_home':{n:'居家除塵蟎(間)',t:60,p:2000}, 'mite_sofa_1':{n:'除蟎-沙發(單)',t:60,p:600}, 'mite_sofa_2':{n:'除蟎-沙發(雙)',t:60,p:1000}, 'mite_sofa_l':{n:'除蟎-沙發(L型)',t:60,p:1500}, 'mite_bed_1':{n:'除蟎-床(單)',t:60,p:600}, 'mite_bed_2':{n:'除蟎-床(雙)',t:60,p:1200} }
     };
 
     let currentStep = 1;
     let order = { items:{}, totalPrice:0, totalTime:0, images:[], slots:[], tempTimeA:0, tempTimeB:0 };
     let userProfile = null;
     let viewDate = new Date(); 
-    let hasShownPromo = false; // 控制廣告只顯示一次
+    let hasShownPromo = false; 
 
     window.onload = async () => {
         initCitySelect();
@@ -231,7 +224,6 @@
     function updateDistricts(){ 
         const c=document.getElementById('city-select').value, d=document.getElementById('district-select'); 
         d.innerHTML='<option value="">請選區域</option>'; d.disabled=false;
-        
         const alertBox = document.getElementById('other-city-alert');
         if(c==='其他縣市'){ 
             d.innerHTML='<option value="無">無</option>'; 
@@ -262,21 +254,15 @@
         document.getElementById(id).innerHTML=h;
     }
     
-    // ★ 修改：動態定價邏輯 (分離式冷氣) & 大量預約提醒
     function chQty(k,type,d){
         let el=document.getElementById(`qty-${k}`), v=parseInt(el.value)+d;
         if(v<0)v=0; el.value=v; order.items[k]=v;
-        
-        // 1. 計算總價
         let p=0, timeA=0, timeB=0;
-        
-        // 特殊計算: 分離式冷氣
         let splitAcCount = order.items['ac_split'] || 0;
         let splitAcPrice = 0;
         if (splitAcCount === 1) splitAcPrice = 2000;
-        else if (splitAcCount >= 2) splitAcPrice = splitAcCount * 1500; // 2台3000(1500*2), 3台4500(1500*3)... 符合每加一台+1500邏輯
+        else if (splitAcCount >= 2) splitAcPrice = splitAcCount * 1500; 
 
-        // 遍歷所有項目
         for(let key in order.items){
             let qty = order.items[key];
             if(qty>0){
@@ -294,19 +280,10 @@
         document.getElementById('total-price').innerText=p;
         document.getElementById('total-time').innerText=order.totalTime;
 
-        // 2. 檢查是否需要提醒 (冷氣+洗衣機 >= 5)
         let acCount = (order.items['ac_split']||0) + (order.items['ac_window']||0) + (order.items['ac_hidden']||0) + (order.items['ac_4way']||0);
         let washCount = (order.items['wash_top']||0) + (order.items['wash_drum']||0);
-        if (acCount + washCount >= 5 && d > 0) { // 只在增加數量時跳提醒
-             Swal.fire({
-                toast: true,
-                position: 'top',
-                icon: 'info',
-                title: '台數較多提醒',
-                text: '建議您直接與師傅聯絡，或繼續預約由專人為您安排。',
-                timer: 3000,
-                showConfirmButton: false
-            });
+        if (acCount + washCount >= 5 && d > 0) { 
+             Swal.fire({ toast: true, position: 'top', icon: 'info', title: '台數較多提醒', text: '建議您直接與師傅聯絡，或繼續預約由專人為您安排。', timer: 3000, showConfirmButton: false });
         }
     }
 
@@ -337,19 +314,45 @@
         .catch(e=>document.getElementById('calendar-body').innerHTML='<div class="text-danger p-3" style="grid-column:1/-1">載入失敗</div>');
     }
 
+    // ★ 修改：渲染日曆 (加入"推"的邏輯)
     function renderCalendarGrid(year, month, busyMap){
         let html = '', firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
         let today = new Date(); today.setHours(0,0,0,0);
+        
+        // 取得使用者選擇的地區
+        let userCity = document.getElementById('city-select').value;
+        let userDist = document.getElementById('district-select').value;
+
         for(let i=0; i<firstDay; i++){ html += `<div class="cal-cell" style="background:#f9f9f9;cursor:default;"></div>`; }
+        
         for(let i=1; i<=daysInMonth; i++){
             let d = new Date(year, month, i);
             let dateStr = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
             let regions = busyMap[dateStr] || [];
             let badgeHtml = regions.map(r => `<div class="cal-badge region">${r.replace(' ', '<br>')}</div>`).join('');
+            
+            // ★ "推" 的判斷邏輯：
+            // 1. 日期沒有過期
+            // 2. 當天有行程 (regions.length > 0)
+            // 3. 該行程的地區 包含 使用者選擇的「區域」(例如 "中和區")
+            let recommendTag = '';
+            if (d >= today && regions.length > 0 && userDist && userDist !== '無') {
+                // 檢查是否有行程包含該區域字串
+                let isMatch = regions.some(r => r.includes(userDist));
+                if (isMatch) {
+                    recommendTag = `<div class="cal-tag-recommend">推</div>`;
+                }
+            }
+
             if (d < today) {
                 html += `<div class="cal-cell disabled"><div class="cal-date">${i}</div>${badgeHtml}</div>`;
             } else {
-                html += `<div class="cal-cell" onclick="selectDate('${dateStr}', this)"><div class="cal-date">${i}</div>${badgeHtml}</div>`;
+                // 加上 recommendTag
+                html += `<div class="cal-cell" onclick="selectDate('${dateStr}', this)">
+                            ${recommendTag}
+                            <div class="cal-date">${i}</div>
+                            ${badgeHtml}
+                         </div>`;
             }
         }
         document.getElementById('calendar-body').innerHTML = html;
@@ -400,7 +403,6 @@
         if(d===1){
             if(currentStep===1 && !document.getElementById('district-select').value) return Swal.fire('請選地區');
             
-            // ★ 新增：Step 1 -> Step 2 顯示廣告彈窗
             if(currentStep===1 && !hasShownPromo) {
                 document.getElementById('promo-overlay').style.display = 'flex';
                 hasShownPromo = true;
@@ -409,7 +411,6 @@
 
             if(currentStep===2 && order.totalPrice===0) return Swal.fire('請選服務');
             
-            // ★ 新增：強制檢查 3 個時段
             if(currentStep===4){
                 if(order.slots.length !== 3) return Swal.fire('請選擇 3 個時段', '為了方便安排，請務必選擇 3 個志願序時段才能繼續喔！', 'warning');
                 updateAddrPrefix(); 
@@ -431,7 +432,7 @@
     function submitOrder(){
         let n=document.getElementById('user-name').value, p=document.getElementById('user-phone').value, a=document.getElementById('user-addr').value;
         let city = document.getElementById('city-select').value;
-        let remarks = document.getElementById('user-remarks').value; // ★ 取得備註
+        let remarks = document.getElementById('user-remarks').value; 
 
         if(city === '其他縣市' && a.length < 5) return Swal.fire('請填寫完整地址', '選擇其他縣市時，請務必填寫詳細地址以便我們評估車馬費。', 'warning');
         
@@ -446,7 +447,7 @@
                 name:n, phone:p, city:city, district:document.getElementById('district-select').value, address:a,
                 items:order.items, summary:document.getElementById('final-item-list').innerText, totalPrice:order.totalPrice,
                 selectedSlots:order.slots, images:order.images, timeA:order.tempTimeA, timeB:order.tempTimeB,
-                remarks: remarks // ★ 傳送備註
+                remarks: remarks 
             })
         })
         .then(r=>r.json()).then(res=>{
@@ -459,4 +460,3 @@
 </script>
 </body>
 </html>
-
