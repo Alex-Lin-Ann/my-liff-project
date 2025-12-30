@@ -78,7 +78,7 @@
 
 <div id="promo-overlay">
     <div id="promo-content">
-        <img src="https://ibb.co/KcNrdzCf" alt="2026年優惠活動">
+        <img src="https://i.ibb.co/CpJHgsxY/promotion.jpg" alt="優惠活動">
     </div>
 </div>
 
@@ -126,7 +126,7 @@
             <h5>3. 上傳照片 (選填)</h5>
             <div class="mb-3"><label class="btn btn-outline-primary w-100">➕ 選擇照片<input type="file" accept="image/*" multiple hidden onchange="handleFiles(this.files)"></label></div>
             <div id="preview-area" class="clearfix"></div>
-            <p class="text-muted small mt-2">照片將上傳給師傅，讓師傅提供更完善的服務。</p>
+            <p class="text-muted small mt-2">照片會提供師傅，並事前規劃給您完善的服務。</p>
         </div></div>
     </div>
 
@@ -135,7 +135,7 @@
             <h5>4. 選擇預約日期</h5>
             <div class="alert alert-warning small py-1">
                 請選擇 <b>3 個時段</b>。<br>
-                <span class="badge bg-danger rounded-circle">推</span> 表示師傅當天已在同縣市，預約安排更快更順利！
+                <span class="badge bg-danger rounded-circle">推</span> 表示師傅當天已在同縣市，安排服務更輕鬆！
             </div>
             <div class="calendar-controls">
                 <div class="btn-cal-nav" onclick="changeMonth(-1)">&#10094;</div>
@@ -161,7 +161,7 @@
             <input type="text" id="user-name" class="form-control mb-3" placeholder="稱呼">
             <input type="tel" id="user-phone" class="form-control mb-3" placeholder="電話">
             <div class="input-group mb-3"><span class="input-group-text bg-light" id="addr-prefix"></span><input type="text" id="user-addr" class="form-control" placeholder="地址 (請填寫完整)"></div>
-            <textarea id="user-remarks" class="form-control mb-3" placeholder="備註需求 (例如：建議師傅Ⓟ停車位置、社區特殊規定、清洗的特殊機型、特殊材質..."></textarea>
+            <textarea id="user-remarks" class="form-control mb-3" placeholder="備註需求 (例如：建議師傅停車位置、社區特殊規定、特殊機型、材質等..."></textarea>
             
             <div class="bg-light p-3 rounded mb-3"><h6 class="fw-bold">已選時段</h6><ul id="final-slot-list" class="ps-3 mb-0 small"></ul></div>
             <div class="bg-light p-3 rounded"><div id="final-item-list" class="small text-muted"></div><div class="text-end fw-bold text-danger mt-1">總計: $<span id="final-price">0</span></div></div>
@@ -177,7 +177,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // ================= 設定區 =================
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxK5BljAC2OGxqgXIZSGgeK5rXVvcV6UB5uwPnnevMUsAvlxMuk-LzwKNFjiGN9fxzouw/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwFxqdldZWdKPMziPk3tw6m2VibzxunStBeOJwdYnhXJwPKLKlGxaRdaypMKgFemgnzjQ/exec"; 
     const LIFF_ID = "2008787455-1meqQHRA"; 
     // =========================================
 
@@ -198,7 +198,7 @@
     let userProfile = null;
     let viewDate = new Date(); 
     let hasShownPromo = false; 
-    let currentBusyMap = {}; // ★ 新增：全域變數儲存行程
+    let currentBusyMap = {}; 
 
     window.onload = async () => {
         initCitySelect();
@@ -227,7 +227,7 @@
         if(c==='其他縣市'){ 
             d.innerHTML='<option value="無">無</option>'; 
             alertBox.style.display = 'block'; 
-            Swal.fire({ icon: 'warning', title: '注意', text: '您選擇了其他縣市，可能會有額外的車馬費，師傅會在評估後聯繫報價。' });
+            Swal.fire({ icon: 'warning', title: '注意', text: '您選擇了其他縣市，可能會有額外的車馬費，師傅將與您聯繫報價。' });
         } else {
             alertBox.style.display = 'none'; 
             if(CITY_DATA[c]) CITY_DATA[c].forEach(x=>d.add(new Option(x,x)));
@@ -282,7 +282,7 @@
         let acCount = (order.items['ac_split']||0) + (order.items['ac_window']||0) + (order.items['ac_hidden']||0) + (order.items['ac_4way']||0);
         let washCount = (order.items['wash_top']||0) + (order.items['wash_drum']||0);
         if (acCount + washCount >= 5 && d > 0) { 
-             Swal.fire({ toast: true, position: 'top', icon: 'info', title: '台數較多提醒', text: '建議您直接與師傅聯絡，或繼續預約由專人為您安排。', timer: 3000, showConfirmButton: false });
+             Swal.fire({ toast: true, position: 'top', icon: 'info', title: '件數較多提醒', text: '建議您直接與師傅聯絡，或繼續預約由師傅為您安排。', timer: 3000, showConfirmButton: false });
         }
     }
 
@@ -316,7 +316,7 @@
             items: order.items 
         })})
         .then(r=>r.json()).then(res=>{ 
-            currentBusyMap = res; // ★ 儲存到全域變數
+            currentBusyMap = res; 
             renderCalendarGrid(year, month, res); 
         })
         .catch(e=>document.getElementById('calendar-body').innerHTML='<div class="text-danger p-3" style="grid-column:1/-1">載入失敗</div>');
@@ -354,7 +354,7 @@
             } else if (!hasSlot) {
                 html += `<div class="cal-cell disabled" style="background:#fff0f0; border-color:#ffcccc;">
                             <div class="cal-date text-danger">${i}</div>
-                            <div style="font-size:10px; color:red; font-weight:bold;">已額滿</div>
+                            <div style="font-size:10px; color:red; font-weight:bold;">已滿</div>
                          </div>`;
             } else {
                 html += `<div class="cal-cell" onclick="selectDate('${dateStr}', this)">
@@ -386,7 +386,6 @@
         });
     }
 
-    // ★ 修改：在選取時判斷該日期是否有推，並存入 order.slots
     function toggleSlot(d, t, btn){
         let idx = order.slots.findIndex(s=>s.date===d && s.time===t);
         if(idx!==-1){ 
@@ -396,7 +395,7 @@
         } else {
             if(order.slots.length>=3) return Swal.fire('最多3個時段');
             
-            // 判斷是否推薦
+            // 判斷是否推薦 (前端直接判斷)
             let isRec = false;
             let userCity = document.getElementById('city-select').value;
             if (currentBusyMap[d] && currentBusyMap[d].regions && userCity && userCity !== '其他縣市') {
@@ -481,6 +480,3 @@
 </script>
 </body>
 </html>
-
-
-
