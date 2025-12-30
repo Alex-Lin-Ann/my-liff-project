@@ -198,6 +198,7 @@
     let userProfile = null;
     let viewDate = new Date(); 
     let hasShownPromo = false; 
+    let currentBusyMap = {}; // ★ 新增：全域變數儲存行程
 
     window.onload = async () => {
         initCitySelect();
@@ -314,11 +315,13 @@
             month: month,
             items: order.items 
         })})
-        .then(r=>r.json()).then(res=>{ renderCalendarGrid(year, month, res); })
+        .then(r=>r.json()).then(res=>{ 
+            currentBusyMap = res; // ★ 儲存到全域變數
+            renderCalendarGrid(year, month, res); 
+        })
         .catch(e=>document.getElementById('calendar-body').innerHTML='<div class="text-danger p-3" style="grid-column:1/-1">載入失敗</div>');
     }
 
-    // ★ 修改：渲染日曆 (額滿與推薦邏輯)
     function renderCalendarGrid(year, month, busyMap){
         let html = '', firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
         let today = new Date(); today.setHours(0,0,0,0);
@@ -337,11 +340,7 @@
 
             let badgeHtml = regions.map(r => `<div class="cal-badge region">${r.replace(' ', '<br>')}</div>`).join('');
             
-            // ★ 修改推薦條件：
-            // 1. 日期未過期
-            // 2. 有行程 (regions.length > 0)
-            // 3. 有空檔 (hasSlot === true)
-            // 4. 地區開頭符合縣市
+            // 推薦邏輯
             let recommendTag = '';
             if (d >= today && regions.length > 0 && hasSlot && userCity && userCity !== '其他縣市') {
                 let isMatch = regions.some(r => r.startsWith(userCity));
@@ -387,6 +386,7 @@
         });
     }
 
+    // ★ 修改：在選取時判斷該日期是否有推，並存入 order.slots
     function toggleSlot(d, t, btn){
         let idx = order.slots.findIndex(s=>s.date===d && s.time===t);
         if(idx!==-1){ 
@@ -395,7 +395,18 @@
             btn.querySelector('.rank-badge').style.display='none'; 
         } else {
             if(order.slots.length>=3) return Swal.fire('最多3個時段');
-            order.slots.push({date:d, time:t});
+            
+            // 判斷是否推薦
+            let isRec = false;
+            let userCity = document.getElementById('city-select').value;
+            if (currentBusyMap[d] && currentBusyMap[d].regions && userCity && userCity !== '其他縣市') {
+                if (currentBusyMap[d].regions.some(r => r.startsWith(userCity))) {
+                    isRec = true;
+                }
+            }
+
+            order.slots.push({date:d, time:t, isRec: isRec}); // 存入 isRec
+            
             btn.classList.add('active'); 
             btn.querySelector('.rank-badge').innerText = order.slots.length; 
             btn.querySelector('.rank-badge').style.display='block';
@@ -470,8 +481,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
