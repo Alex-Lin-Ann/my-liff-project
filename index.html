@@ -161,7 +161,7 @@
             <input type="text" id="user-name" class="form-control mb-3" placeholder="稱呼">
             <input type="tel" id="user-phone" class="form-control mb-3" placeholder="電話">
             <div class="input-group mb-3"><span class="input-group-text bg-light" id="addr-prefix"></span><input type="text" id="user-addr" class="form-control" placeholder="地址 (請填寫完整)"></div>
-            <textarea id="user-remarks" class="form-control mb-3" placeholder="備註需求 (例如：有養寵物、自備停車位...)"></textarea>
+            <textarea id="user-remarks" class="form-control mb-3" placeholder="備註需求 (例如：建議停車位置、社區特殊需求、特殊型號/材質..."></textarea>
             
             <div class="bg-light p-3 rounded mb-3"><h6 class="fw-bold">已選時段</h6><ul id="final-slot-list" class="ps-3 mb-0 small"></ul></div>
             <div class="bg-light p-3 rounded"><div id="final-item-list" class="small text-muted"></div><div class="text-end fw-bold text-danger mt-1">總計: $<span id="final-price">0</span></div></div>
@@ -269,7 +269,6 @@
                     p += splitAcPrice;
                     timeA += CATALOG.A[key].t * qty;
                 } else {
-                    // ★ 修正：這裡要判斷 A 或 B
                     if(CATALOG.A[key]){ p+=CATALOG.A[key].p*qty; timeA+=CATALOG.A[key].t*qty; }
                     else if(CATALOG.B[key]){ p+=CATALOG.B[key].p*qty; timeB+=CATALOG.B[key].t*qty; }
                 }
@@ -281,16 +280,11 @@
         document.getElementById('total-time').innerText=order.totalTime;
 
         // ★ 修正：計算所有品項總數，不管是 A 還是 B，只要 >= 5 就提醒
-        // 為了避免漏算，我們遍歷所有選取的項目
         let totalCount = 0;
         for (let key in order.items) {
-            totalCount += (order.items[key] || 0);
+            totalCount += (order.items[key] || 0); // 確保數值安全
         }
 
-        // 特別針對冷氣與洗衣機大件物品的數量檢查 (依照您之前的邏輯)
-        // 或者您希望所有項目加起來 > 5 都要提醒？這裡假設是針對大件家電
-        // acCount + washCount 的邏輯保留，並加入 B 師傅項目的檢查 (如床墊、沙發)
-        // 為了簡單起見，我們檢查「所有項目的總數」是否 >= 5
         if (totalCount >= 5 && d > 0) { 
              Swal.fire({ toast: true, position: 'top', icon: 'info', title: '件數較多提醒', text: '建議您直接與師傅聯絡，或繼續預約由師傅為您安排。', timer: 3000, showConfirmButton: false });
         }
@@ -404,11 +398,10 @@
         } else {
             if(order.slots.length>=3) return Swal.fire('最多3個時段');
             
-            // ★ 安全讀取 isRec
+            // ★ 安全檢查: 防止 currentBusyMap 未載入導致卡住
             let isRec = false;
             let userCity = document.getElementById('city-select').value;
-            // 加入安全檢查 (?.) 防止 undefined 錯誤
-            if (currentBusyMap[d] && currentBusyMap[d]?.regions && userCity && userCity !== '其他縣市') {
+            if (currentBusyMap && currentBusyMap[d] && currentBusyMap[d].regions && userCity && userCity !== '其他縣市') {
                 if (currentBusyMap[d].regions.some(r => r.startsWith(userCity))) {
                     isRec = true;
                 }
@@ -469,8 +462,6 @@
         if(!n||!p||!a) return Swal.fire('請填完整資料');
         
         document.getElementById('loading-overlay').style.display='flex';
-        
-        // ★ 加入 try-catch 防止 fetch 錯誤導致卡死
         fetch(GAS_URL, {
             method:'POST',
             body:JSON.stringify({
@@ -482,8 +473,7 @@
                 remarks: remarks 
             })
         })
-        .then(r=>r.json())
-        .then(res=>{
+        .then(r=>r.json()).then(res=>{
             document.getElementById('loading-overlay').style.display='none';
             if(res.status==='success') Swal.fire('成功','已通知師傅，請留意LINE通知','success').then(()=>liff.closeWindow());
             else Swal.fire('失敗',res.msg,'error');
