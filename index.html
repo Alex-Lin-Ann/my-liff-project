@@ -78,7 +78,7 @@
 
 <div id="promo-overlay">
     <div id="promo-content">
-        <img src="https://drive.google.com/uc?export=view&id=1-VK_YEuoCC1uQ2k_QtozXWl7srnTmBv3" alt="2026年優惠活動">
+        <img src="https://ibb.co/KcNrdzCf" alt="2026年優惠活動">
     </div>
 </div>
 
@@ -126,7 +126,7 @@
             <h5>3. 上傳照片 (選填)</h5>
             <div class="mb-3"><label class="btn btn-outline-primary w-100">➕ 選擇照片<input type="file" accept="image/*" multiple hidden onchange="handleFiles(this.files)"></label></div>
             <div id="preview-area" class="clearfix"></div>
-            <p class="text-muted small mt-2">照片將透過連結附在通知信中。</p>
+            <p class="text-muted small mt-2">照片將上傳給師傅，讓師傅提供更完善的服務。</p>
         </div></div>
     </div>
 
@@ -135,7 +135,7 @@
             <h5>4. 選擇預約日期</h5>
             <div class="alert alert-warning small py-1">
                 請選擇 <b>3 個時段</b>。<br>
-                <span class="badge bg-danger rounded-circle">推</span> 代表師傅當天已在同縣市，安排最快！
+                <span class="badge bg-danger rounded-circle">推</span> 表示師傅當天已在同縣市，預約安排更快更順利！
             </div>
             <div class="calendar-controls">
                 <div class="btn-cal-nav" onclick="changeMonth(-1)">&#10094;</div>
@@ -227,7 +227,7 @@
         if(c==='其他縣市'){ 
             d.innerHTML='<option value="無">無</option>'; 
             alertBox.style.display = 'block'; 
-            Swal.fire({ icon: 'warning', title: '注意', text: '您選擇了其他縣市，可能會有額外的車馬費，專人將與您聯繫報價。' });
+            Swal.fire({ icon: 'warning', title: '注意', text: '您選擇了其他縣市，可能會有額外的車馬費，師傅會在評估後聯繫報價。' });
         } else {
             alertBox.style.display = 'none'; 
             if(CITY_DATA[c]) CITY_DATA[c].forEach(x=>d.add(new Option(x,x)));
@@ -354,7 +354,7 @@
             } else if (!hasSlot) {
                 html += `<div class="cal-cell disabled" style="background:#fff0f0; border-color:#ffcccc;">
                             <div class="cal-date text-danger">${i}</div>
-                            <div style="font-size:10px; color:red; font-weight:bold;">已滿</div>
+                            <div style="font-size:10px; color:red; font-weight:bold;">已額滿</div>
                          </div>`;
             } else {
                 html += `<div class="cal-cell" onclick="selectDate('${dateStr}', this)">
@@ -433,7 +433,7 @@
             if(currentStep===2 && order.totalPrice===0) return Swal.fire('請選服務');
             
             if(currentStep===4){
-                if(order.slots.length !== 3) return Swal.fire('請選擇 3 個時段', '為了方便安排，請務必選擇 3 個志願序時段才能繼續喔！', 'warning');
+                if(order.slots.length !== 3) return Swal.fire('請選擇 3 個時段', '為了方便安排，請務必選擇 3 個時段才能繼續喔！', 'warning');
                 updateAddrPrefix(); 
                 document.getElementById('final-item-list').innerText = Object.keys(order.items).filter(k=>order.items[k]>0).map(k=>(CATALOG.A[k]||CATALOG.B[k]).n+'x'+order.items[k]).join(', ');
                 document.getElementById('final-price').innerText = order.totalPrice;
@@ -481,5 +481,6 @@
 </script>
 </body>
 </html>
+
 
 
