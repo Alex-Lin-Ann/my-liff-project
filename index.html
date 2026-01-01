@@ -20,24 +20,36 @@
         .step-section.active { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        /* Nav Tabs 深色化 */
+        /* Nav Tabs 深色化 & 金色 */
         .nav-tabs { border-bottom: 1px solid #555; }
         .nav-tabs .nav-link { color: #ccc; }
-        .nav-tabs .nav-link.active { background-color: #3b3d5c; color: #00d4ff; border-color: #555 #555 #3b3d5c; font-weight: bold; border-bottom: 2px solid #00d4ff; }
+        .nav-tabs .nav-link.active { 
+            background-color: #3b3d5c; 
+            color: #ddae4e; /* ★ 改金色 */
+            border-color: #555 #555 #3b3d5c; 
+            font-weight: bold; 
+            border-bottom: 2px solid #ddae4e; /* ★ 改金色 */
+        }
         
         /* 服務項目列表 */
         .service-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #4a4c6e; border-bottom: 1px solid #555; margin-bottom: 5px; border-radius: 5px; }
         .service-row strong { color: #fff; }
         .service-row small { color: #ccc !important; }
         
-        /* 數量按鈕 */
-        .qty-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #00d4ff; background: transparent; color: #00d4ff; font-weight: bold; }
+        /* 數量按鈕 (金色) */
+        .qty-btn { 
+            width: 30px; height: 30px; border-radius: 50%; 
+            border: 1px solid #ddae4e; /* ★ 改金色 */
+            background: transparent; 
+            color: #ddae4e; /* ★ 改金色 */
+            font-weight: bold; 
+        }
         .qty-input { width: 35px; text-align: center; border: none; background: transparent; font-weight: bold; color: #fff; }
         
         /* 日曆控制項 */
         .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: #4a4c6e; padding: 10px; border-radius: 8px; border: 1px solid #555; }
         .btn-cal-nav { background: #3b3d5c; border: 1px solid #555; border-radius: 5px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; }
-        .current-month-label { font-weight: bold; font-size: 1.1rem; color: #00d4ff; }
+        .current-month-label { font-weight: bold; font-size: 1.1rem; color: #ddae4e; /* ★ 改金色 */ }
         
         /* 日曆格子 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
@@ -48,8 +60,13 @@
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
             padding: 5px 1px; cursor: pointer; position: relative; color: #fff;
         }
-        .cal-cell.today { border: 2px solid #00d4ff; }
-        .cal-cell.selected { background-color: #00d4ff !important; border-color: #00d4ff; color: #fff; box-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
+        .cal-cell.today { border: 2px solid #ddae4e; /* ★ 改金色 */ }
+        .cal-cell.selected { 
+            background-color: #ddae4e !important; /* ★ 改金色 */
+            border-color: #ddae4e; 
+            color: #fff; 
+            box-shadow: 0 0 10px rgba(221, 174, 78, 0.5); /* ★ 改金色陰影 */
+        }
         .cal-cell.selected::after { content: '✔'; position: absolute; top: 2px; right: 2px; font-size: 12px; color: #fff; background: rgba(0,0,0,0.3); border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
         .cal-cell.disabled { background-color: #2a2c42; color: #555; cursor: not-allowed; border-color: #333; }
         
@@ -66,12 +83,19 @@
         @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
 
         .cal-date { font-weight: bold; font-size: 0.9rem; margin-bottom: 2px; }
-        .cal-badge { font-size: 0.65rem; padding: 2px 1px; border-radius: 3px; width: 98%; text-align: center; line-height: 1.1; word-break: break-all; color: #333; } /* Badge 文字維持深色 */
+        .cal-badge { font-size: 0.65rem; padding: 2px 1px; border-radius: 3px; width: 98%; text-align: center; line-height: 1.1; word-break: break-all; color: #333; } 
         .cal-badge.region { background: #b8f2c3; color: #155724; border: none; }
         
-        .slot-btn { width: 100%; margin-bottom: 8px; text-align: left; padding: 10px; border: 1px solid #00d4ff; background: transparent; color: #00d4ff; border-radius: 8px; position: relative; }
-        .slot-btn.active { background: #00d4ff; color: white; }
-        .rank-badge { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: white; color: #0056b3; width: 20px; height: 20px; border-radius: 50%; text-align: center; font-size: 12px; line-height: 20px; display: none; }
+        /* 時段按鈕 (金色) */
+        .slot-btn { 
+            width: 100%; margin-bottom: 8px; text-align: left; padding: 10px; 
+            border: 1px solid #ddae4e; /* ★ 改金色 */
+            background: transparent; 
+            color: #ddae4e; /* ★ 改金色 */
+            border-radius: 8px; position: relative; 
+        }
+        .slot-btn.active { background: #ddae4e; color: white; } /* ★ 改金色 */
+        .rank-badge { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: white; color: #b08d42; width: 20px; height: 20px; border-radius: 50%; text-align: center; font-size: 12px; line-height: 20px; display: none; }
         .slot-btn.active .rank-badge { display: block; }
         
         /* 底部導航 */
@@ -80,7 +104,11 @@
         
         /* 輸入框樣式 */
         .form-control, .form-select { background-color: #4a4c6e; border: 1px solid #555; color: #fff; }
-        .form-control:focus, .form-select:focus { background-color: #55577a; color: #fff; border-color: #00d4ff; box-shadow: 0 0 0 0.25rem rgba(0, 212, 255, 0.25); }
+        .form-control:focus, .form-select:focus { 
+            background-color: #55577a; color: #fff; 
+            border-color: #ddae4e; /* ★ 改金色 */
+            box-shadow: 0 0 0 0.25rem rgba(221, 174, 78, 0.25); /* ★ 改金色光暈 */
+        }
         .input-group-text { background-color: #3b3d5c; border-color: #555; color: #ccc; }
         .form-control::placeholder { color: #aaa; }
 
@@ -96,11 +124,26 @@
         /* 提示框 */
         .bg-light { background-color: #4a4c6e !important; color: #fff; }
         .text-muted { color: #ccc !important; }
+
+        /* ★ 新增：自定義金色按鈕樣式 (替代 btn-outline-info) */
+        .btn-outline-gold {
+            color: #ddae4e;
+            border-color: #ddae4e;
+        }
+        .btn-outline-gold:hover {
+            color: #fff;
+            background-color: #ddae4e;
+            border-color: #ddae4e;
+        }
+        /* ★ 新增：自定義金色文字 */
+        .text-gold {
+            color: #ddae4e !important;
+        }
     </style>
 </head>
 <body>
 
-<div id="loading-overlay"><div class="spinner-border text-info"></div><div class="mt-2">處理中...</div></div>
+<div id="loading-overlay"><div class="spinner-border text-gold"></div><div class="mt-2">處理中...</div></div>
 
 <div id="promo-overlay">
     <div id="promo-content">
@@ -109,7 +152,10 @@
 </div>
 
 <div class="container mt-3">
-    <h4 class="text-center mb-4 fw-bold" style="color: #00d4ff;">勝潔實-居家清潔</h4>
+    <div class="d-flex justify-content-center align-items-center mb-4">
+        <img src="SJS_LOGO_ol_05_0.jpg" alt="Logo" style="height: 50px; margin-right: 12px; border-radius: 5px;">
+        <h4 class="fw-bold mb-0" style="color: #ddae4e;">勝潔實-居家清潔</h4>
+    </div>
 
     <div id="step1" class="step-section active">
         <div class="card shadow-sm"><div class="card-body">
@@ -140,8 +186,8 @@
                 <div class="tab-pane fade show active" id="content-a"></div>
                 <div class="tab-pane fade" id="content-b"></div>
             </div>
-            <div class="alert alert-info mt-3 d-flex justify-content-between align-items-center mb-0" style="background-color: #2b4d5e; border-color: #00d4ff; color: #e0f7fa;">
-                <span>預估總額</span><strong class="fs-4 text-info">$<span id="total-price">0</span></strong>
+            <div class="alert alert-info mt-3 d-flex justify-content-between align-items-center mb-0" style="background-color: #3d352b; border-color: #ddae4e; color: #ffebb7;">
+                <span>預估總額</span><strong class="fs-4 text-gold">$<span id="total-price">0</span></strong>
             </div>
             <div class="text-end text-muted small mt-1">預估總工時: <span id="total-time">0</span> 分鐘</div>
         </div></div>
@@ -150,7 +196,7 @@
     <div id="step3" class="step-section">
         <div class="card shadow-sm"><div class="card-body">
             <h5>3. 上傳照片 (選填)</h5>
-            <div class="mb-3"><label class="btn btn-outline-info w-100">➕ 選擇照片<input type="file" accept="image/*" multiple hidden onchange="handleFiles(this.files)"></label></div>
+            <div class="mb-3"><label class="btn btn-outline-gold w-100">➕ 選擇照片<input type="file" accept="image/*" multiple hidden onchange="handleFiles(this.files)"></label></div>
             <div id="preview-area" class="clearfix"></div>
             <p class="text-muted small mt-2">事前提供照片，師傅才能提供更完善的服務。</p>
         </div></div>
@@ -192,7 +238,7 @@
             <div class="bg-light p-3 rounded mb-3"><h6 class="fw-bold">已選時段</h6><ul id="final-slot-list" class="ps-3 mb-0 small"></ul></div>
             <div class="bg-light p-3 rounded">
                 <div id="final-item-list" class="small text-muted"></div>
-                <div class="text-end fw-bold text-danger mt-1">總計: $<span id="final-price">0</span></div>
+                <div class="text-end fw-bold text-gold mt-1">總計: $<span id="final-price">0</span></div>
                 <div class="text-end small text-warning mt-2" style="font-size: 0.8rem; border-top: 1px dashed #555; padding-top: 5px;">
                     (此為預估金額，視情況依當天施作環境、其他縣市及施作難易度為主)
                 </div>
@@ -259,7 +305,7 @@
         if(c==='其他縣市'){ 
             d.innerHTML='<option value="無">無</option>'; 
             alertBox.style.display = 'block'; 
-            Swal.fire({ icon: 'warning', title: '注意', text: '您選擇了其他縣市，可能會有額外的車馬費，收到預約通知後，師傅將與您聯繫報價。' });
+            Swal.fire({ icon: 'warning', title: '注意', text: '您選擇了其他縣市，可能會有額外的車馬費，師傅將與您聯繫報價。' });
         } else {
             alertBox.style.display = 'none'; 
             if(CITY_DATA[c]) CITY_DATA[c].forEach(x=>d.add(new Option(x,x)));
@@ -343,7 +389,7 @@
     function loadMonthSchedule() {
         let year = viewDate.getFullYear(), month = viewDate.getMonth();
         document.getElementById('cal-month-label').innerText = `${year}年 ${month+1}月`;
-        document.getElementById('calendar-body').innerHTML = '<div class="text-center w-100 py-3" style="grid-column: 1/-1"><div class="spinner-border text-info"></div></div>';
+        document.getElementById('calendar-body').innerHTML = '<div class="text-center w-100 py-3" style="grid-column: 1/-1"><div class="spinner-border text-gold"></div></div>';
         fetch(GAS_URL, {method:'POST', body:JSON.stringify({
             action:'getBusySchedule', 
             year: year, 
@@ -405,7 +451,7 @@
         document.querySelectorAll('.cal-cell').forEach(c=>c.classList.remove('selected')); el.classList.add('selected');
         document.getElementById('time-slot-section').style.display='block';
         document.getElementById('selected-date-display').innerText = dateStr;
-        document.getElementById('slots-container').innerHTML='<div class="text-center w-100 py-3"><div class="spinner-border text-info"></div></div>';
+        document.getElementById('slots-container').innerHTML='<div class="text-center w-100 py-3"><div class="spinner-border text-gold"></div></div>';
         fetch(GAS_URL, {method:'POST', body:JSON.stringify({action:'getSlots', date:dateStr, items:order.items})})
         .then(r=>r.json()).then(res=>{
             let h='';
@@ -505,7 +551,7 @@
         })
         .then(r=>r.json()).then(res=>{
             document.getElementById('loading-overlay').style.display='none';
-            if(res.status==='success') Swal.fire('成功','已收到您的預約請求，師傅會盡快協助闕仁，請留意您的LINE通知','success').then(()=>liff.closeWindow());
+            if(res.status==='success') Swal.fire('成功','已收到您的預約請求，師傅會盡快協助確認，請留意您的LINE通知','success').then(()=>liff.closeWindow());
             else Swal.fire('失敗',res.msg,'error');
         })
         .catch(e=>{ 
