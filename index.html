@@ -9,10 +9,8 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
     <style>
-        /* ★ 修改：深色主題背景 */
+        /* 深色主題背景 */
         body { background-color: #2f314a; font-family: -apple-system, sans-serif; padding-bottom: 80px; color: #f0f0f0; }
-        
-        /* 卡片樣式調整為深色模式 */
         .card { background-color: #3b3d5c; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
         .card-body h5 { color: #fff; border-bottom: 1px solid #555; padding-bottom: 10px; margin-bottom: 15px; }
         
@@ -20,99 +18,57 @@
         .step-section.active { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        /* Nav Tabs 深色化 & 金色 */
+        /* Nav Tabs & Service Rows */
         .nav-tabs { border-bottom: 1px solid #555; }
         .nav-tabs .nav-link { color: #ccc; }
-        .nav-tabs .nav-link.active { 
-            background-color: #3b3d5c; 
-            color: #ddae4e; /* ★ 改金色 */
-            border-color: #555 #555 #3b3d5c; 
-            font-weight: bold; 
-            border-bottom: 2px solid #ddae4e; /* ★ 改金色 */
-        }
-        
-        /* 服務項目列表 */
+        .nav-tabs .nav-link.active { background-color: #3b3d5c; color: #ddae4e; border-color: #555 #555 #3b3d5c; font-weight: bold; border-bottom: 2px solid #ddae4e; }
         .service-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #4a4c6e; border-bottom: 1px solid #555; margin-bottom: 5px; border-radius: 5px; }
         .service-row strong { color: #fff; }
         .service-row small { color: #ccc !important; }
-        
-        /* 數量按鈕 (金色) */
-        .qty-btn { 
-            width: 30px; height: 30px; border-radius: 50%; 
-            border: 1px solid #ddae4e; /* ★ 改金色 */
-            background: transparent; 
-            color: #ddae4e; /* ★ 改金色 */
-            font-weight: bold; 
-        }
+        .qty-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ddae4e; background: transparent; color: #ddae4e; font-weight: bold; }
         .qty-input { width: 35px; text-align: center; border: none; background: transparent; font-weight: bold; color: #fff; }
         
-        /* 日曆控制項 */
+        /* Calendar */
         .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: #4a4c6e; padding: 10px; border-radius: 8px; border: 1px solid #555; }
         .btn-cal-nav { background: #3b3d5c; border: 1px solid #555; border-radius: 5px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; }
-        .current-month-label { font-weight: bold; font-size: 1.1rem; color: #ddae4e; /* ★ 改金色 */ }
-        
-        /* 日曆格子 */
+        .current-month-label { font-weight: bold; font-size: 1.1rem; color: #ddae4e; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         .cal-day-header { text-align: center; font-size: 0.8rem; font-weight: bold; color: #ccc; padding-bottom: 5px; }
         
         .cal-cell { 
-            background: #4a4c6e; border: 1px solid #555; border-radius: 5px; min-height: 65px; 
+            background: #4a4c6e; border: 1px solid #555; border-radius: 5px; min-height: 70px; 
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
             padding: 5px 1px; cursor: pointer; position: relative; color: #fff;
         }
-        .cal-cell.today { border: 2px solid #ddae4e; /* ★ 改金色 */ }
-        .cal-cell.selected { 
-            background-color: #ddae4e !important; /* ★ 改金色 */
-            border-color: #ddae4e; 
-            color: #fff; 
-            box-shadow: 0 0 10px rgba(221, 174, 78, 0.5); /* ★ 改金色陰影 */
-        }
+        .cal-cell.today { border: 2px solid #ddae4e; }
+        .cal-cell.selected { background-color: #ddae4e !important; border-color: #ddae4e; color: #fff; box-shadow: 0 0 10px rgba(221, 174, 78, 0.5); }
         .cal-cell.selected::after { content: '✔'; position: absolute; top: 2px; right: 2px; font-size: 12px; color: #fff; background: rgba(0,0,0,0.3); border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
         .cal-cell.disabled { background-color: #2a2c42; color: #555; cursor: not-allowed; border-color: #333; }
         
-        .cal-tag-recommend {
-            position: absolute; top: -5px; left: -5px;
-            background: #ff3333; color: white;
-            border-radius: 50%; width: 22px; height: 22px;
-            font-size: 12px; font-weight: bold;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.5); z-index: 10;
-            border: 2px solid #fff;
-            animation: popIn 0.3s ease-out;
-        }
+        .cal-date { font-weight: bold; font-size: 0.9rem; margin-bottom: 2px; }
+        
+        /* ★ 新增：依身分別區分顏色 */
+        .cal-badge { font-size: 0.6rem; padding: 1px 2px; border-radius: 3px; width: 96%; text-align: center; line-height: 1.1; margin-bottom: 1px; color: #fff; }
+        .badge-a { background-color: #0d6efd; /* Blue for A */ }
+        .badge-b { background-color: #198754; /* Green for B */ }
+        .badge-c { background-color: #fd7e14; /* Orange for C */ }
+        
+        .cal-tag-recommend { position: absolute; top: -5px; left: -5px; background: #ff3333; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); z-index: 10; border: 2px solid #fff; animation: popIn 0.3s ease-out; }
         @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
 
-        .cal-date { font-weight: bold; font-size: 0.9rem; margin-bottom: 2px; }
-        .cal-badge { font-size: 0.65rem; padding: 2px 1px; border-radius: 3px; width: 98%; text-align: center; line-height: 1.1; word-break: break-all; color: #333; } 
-        .cal-badge.region { background: #b8f2c3; color: #155724; border: none; }
-        
-        /* 時段按鈕 (金色) */
-        .slot-btn { 
-            width: 100%; margin-bottom: 8px; text-align: left; padding: 10px; 
-            border: 1px solid #ddae4e; /* ★ 改金色 */
-            background: transparent; 
-            color: #ddae4e; /* ★ 改金色 */
-            border-radius: 8px; position: relative; 
-        }
-        .slot-btn.active { background: #ddae4e; color: white; } /* ★ 改金色 */
+        .slot-btn { width: 100%; margin-bottom: 8px; text-align: left; padding: 10px; border: 1px solid #ddae4e; background: transparent; color: #ddae4e; border-radius: 8px; position: relative; }
+        .slot-btn.active { background: #ddae4e; color: white; }
         .rank-badge { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: white; color: #b08d42; width: 20px; height: 20px; border-radius: 50%; text-align: center; font-size: 12px; line-height: 20px; display: none; }
         .slot-btn.active .rank-badge { display: block; }
         
-        /* 底部導航 */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #2f314a; padding: 10px; display: flex; gap: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); z-index: 1000; border-top: 1px solid #444; }
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center; color: #fff; }
         
-        /* 輸入框樣式 */
         .form-control, .form-select { background-color: #4a4c6e; border: 1px solid #555; color: #fff; }
-        .form-control:focus, .form-select:focus { 
-            background-color: #55577a; color: #fff; 
-            border-color: #ddae4e; /* ★ 改金色 */
-            box-shadow: 0 0 0 0.25rem rgba(221, 174, 78, 0.25); /* ★ 改金色光暈 */
-        }
+        .form-control:focus, .form-select:focus { background-color: #55577a; color: #fff; border-color: #ddae4e; box-shadow: 0 0 0 0.25rem rgba(221, 174, 78, 0.25); }
         .input-group-text { background-color: #3b3d5c; border-color: #555; color: #ccc; }
         .form-control::placeholder { color: #aaa; }
-
-        /* 其他 */
+        
         .img-box { float: left; width: 70px; height: 70px; margin: 5px; position: relative; border: 1px solid #555; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; }
         .btn-del-img { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; text-align: center; cursor: pointer; }
@@ -121,24 +77,16 @@
         #promo-content { position: relative; max-width: 90%; max-height: 90%; }
         #promo-content img { width: 100%; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
         
-        /* 提示框 */
         .bg-light { background-color: #4a4c6e !important; color: #fff; }
         .text-muted { color: #ccc !important; }
-
-        /* ★ 新增：自定義金色按鈕樣式 (替代 btn-outline-info) */
-        .btn-outline-gold {
-            color: #ddae4e;
-            border-color: #ddae4e;
-        }
-        .btn-outline-gold:hover {
-            color: #fff;
-            background-color: #ddae4e;
-            border-color: #ddae4e;
-        }
-        /* ★ 新增：自定義金色文字 */
-        .text-gold {
-            color: #ddae4e !important;
-        }
+        .btn-outline-gold { color: #ddae4e; border-color: #ddae4e; }
+        .btn-outline-gold:hover { color: #fff; background-color: #ddae4e; border-color: #ddae4e; }
+        .text-gold { color: #ddae4e !important; }
+        
+        /* 圖例樣式 */
+        .legend-box { display: flex; gap: 10px; justify-content: center; margin-bottom: 8px; font-size: 0.75rem; color: #ccc; }
+        .legend-item { display: flex; align-items: center; gap: 3px; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
     </style>
 </head>
 <body>
@@ -153,7 +101,7 @@
 
 <div class="container mt-3">
     <div class="d-flex justify-content-center align-items-center mb-4">
-        <img src="SJS_LOGO_ol_05_0.png" alt="Logo" style="height: 50px; margin-right: 12px; border-radius: 5px;">
+        <img src="SJS_LOGO_ol_05_0.jpg" alt="Logo" style="height: 50px; margin-right: 12px; border-radius: 5px;">
         <h4 class="fw-bold mb-0" style="color: #ddae4e;">勝潔實-居家清潔</h4>
     </div>
 
@@ -179,7 +127,7 @@
                 4台以上每加1台 +$1500
             </div>
             <ul class="nav nav-tabs nav-fill mb-3" id="myTab" role="tablist">
-                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#content-a">A. 冷氣/洗衣機</button></li>
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#content-a">A. 冷氣/家電</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#content-b">B. 居家/清潔</button></li>
             </ul>
             <div class="tab-content">
@@ -207,8 +155,15 @@
             <h5>4. 選擇預約日期</h5>
             <div class="alert alert-warning small py-1" style="background-color: #594a28; color: #ffca2c; border: 1px solid #7a6332;">
                 請選擇 <b>3 個時段</b>。<br>
-                <span class="badge bg-danger rounded-circle">推</span> 表示師傅當天已在同縣市服務，建議選擇當日，您的預約才能更有效的被安排！
+                <span class="badge bg-danger rounded-circle">推</span> 表示師傅當天已在同縣市服務。
             </div>
+            
+            <div class="legend-box">
+                <div class="legend-item"><div class="legend-dot" style="background:#0d6efd;"></div>師傅A</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#198754;"></div>師傅B</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#fd7e14;"></div>師傅C</div>
+            </div>
+
             <div class="calendar-controls">
                 <div class="btn-cal-nav" onclick="changeMonth(-1)">&#10094;</div>
                 <div class="current-month-label" id="cal-month-label"></div>
@@ -255,7 +210,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // ================= 設定區 =================
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbz4hDFP0yZWCtag0L3xl_0mzTURVswan6lS8YBLCBJnij-3OijKZQTFH7tWUTVJuixA/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbw1df2c6I0iW8mlbIifeUT-VZ7469RpIpuwellN87iy8NrYfBJfZJY7G8ce5W_3D7ye/exec"; 
     const LIFF_ID = "2008804953-Zf22ukHp"; 
     // =========================================
 
@@ -267,7 +222,7 @@
     };
 
     const CATALOG = { 
-        'A': { 'ac_split':{n:'分離式冷氣',t:60,p:2000}, 'ac_window':{n:'窗型冷氣',t:120,p:3500}, 'ac_hidden':{n:'吊隱式冷氣',t:120,p:3000}, 'ac_4way':{n:'四方吹冷氣',t:150,p:4500}, 'wash_top':{n:'直立洗衣機',t:90,p:1500}, 'wash_drum':{n:'滾筒洗衣機',t:180,p:3500} },
+        'A': { 'ac_split':{n:'分離式冷氣',t:60,p:2000}, 'ac_window':{n:'窗型冷氣',t:120,p:3500}, 'ac_hidden':{n:'吊隱式冷氣',t:120,p:3000}, 'ac_4way':{n:'四方吹冷氣',t:150,p:4500}, 'wash_top':{n:'直立洗',t:90,p:1500}, 'wash_drum':{n:'滾筒洗',t:180,p:3500} },
         'B': { 'bath':{n:'浴室鍍膜(間)',t:210,p:4500}, 'bed_1':{n:'洗床(單人)',t:180,p:1500}, 'bed_2':{n:'洗床(雙人)',t:180,p:2500}, 'sofa_1':{n:'洗沙發(單人)',t:120,p:1500}, 'sofa_2':{n:'洗沙發(雙人)',t:120,p:2000}, 'sofa_all':{n:'洗沙發(全組)',t:120,p:3500}, 'mite_home':{n:'居家除塵蟎(間)',t:60,p:2000}, 'mite_sofa_1':{n:'除蟎-沙發(單)',t:60,p:600}, 'mite_sofa_2':{n:'除蟎-沙發(雙)',t:60,p:1000}, 'mite_sofa_l':{n:'除蟎-沙發(L型)',t:60,p:1500}, 'mite_bed_1':{n:'除蟎-床(單)',t:60,p:600}, 'mite_bed_2':{n:'除蟎-床(雙)',t:60,p:1200} }
     };
 
@@ -403,6 +358,7 @@
         .catch(e=>document.getElementById('calendar-body').innerHTML='<div class="text-danger p-3" style="grid-column:1/-1">載入失敗</div>');
     }
 
+    // ★ 修改：渲染日曆 (支援 A,B,C 顏色顯示)
     function renderCalendarGrid(year, month, busyMap){
         let html = '', firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
         let today = new Date(); today.setHours(0,0,0,0);
@@ -415,15 +371,30 @@
             let d = new Date(year, month, i);
             let dateStr = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
             
+            // 後端回傳格式: { regions: [{name: "新北市泰山區", type: "A"}, ...], hasSlot: true/false }
             let data = busyMap[dateStr] || { regions: [], hasSlot: true }; 
             let regions = data.regions;
             let hasSlot = data.hasSlot;
 
-            let badgeHtml = regions.map(r => `<div class="cal-badge region">${r.replace(' ', '<br>')}</div>`).join('');
+            // ★ 修改：Badge 顯示與顏色
+            // region 是物件 {name, type}
+            let badgeHtml = regions.map(r => {
+                let badgeClass = '';
+                if (r.type === 'A') badgeClass = 'badge-a';
+                else if (r.type === 'B') badgeClass = 'badge-b';
+                else if (r.type === 'C') badgeClass = 'badge-c';
+                
+                // 斷行處理 (新北市<br>泰山區)
+                let displayName = r.name.replace(/(..[縣市])/, '$1<br>');
+                
+                return `<div class="cal-badge ${badgeClass}">${displayName}</div>`;
+            }).join('');
             
+            // 推薦邏輯
             let recommendTag = '';
             if (d >= today && regions.length > 0 && hasSlot && userCity && userCity !== '其他縣市') {
-                let isMatch = regions.some(r => r.startsWith(userCity));
+                // 檢查是否有任一行程開頭符合使用者縣市
+                let isMatch = regions.some(r => r.name.startsWith(userCity));
                 if (isMatch) {
                     recommendTag = `<div class="cal-tag-recommend">推</div>`;
                 }
@@ -462,7 +433,7 @@
                 h+=`<div class="col-6"><button class="slot-btn ${active}" onclick="toggleSlot('${dateStr}','${s.time}',this)">${s.label}<span class="rank-badge">${rank}</span></button></div>`;
             });
             document.getElementById('slots-container').innerHTML = h;
-            order.tempTimeA = res.timeA; order.tempTimeB = res.timeB; 
+            // 這裡後端回傳 timeA, timeB, timeC，前端暫時只需存起來供參考，實際計算由後端處理
         });
     }
 
@@ -477,8 +448,9 @@
             
             let isRec = false;
             let userCity = document.getElementById('city-select').value;
+            // ★ 修改：檢查 regions 結構 (現在是物件陣列)
             if (currentBusyMap && currentBusyMap[d] && currentBusyMap[d].regions && userCity && userCity !== '其他縣市') {
-                if (currentBusyMap[d].regions.some(r => r.startsWith(userCity))) {
+                if (currentBusyMap[d].regions.some(r => r.name.startsWith(userCity))) {
                     isRec = true;
                 }
             }
@@ -511,7 +483,7 @@
             if(currentStep===2 && order.totalPrice===0) return Swal.fire('請選服務');
             
             if(currentStep===4){
-                if(order.slots.length !== 3) return Swal.fire('請選擇 3 個時段', '為了方便安排，請務必選擇 3 個時段才能繼續喔！', 'warning');
+                if(order.slots.length !== 3) return Swal.fire('請選擇 3 個時段', '為了方便安排，請務必選擇 3 個志願序時段才能繼續喔！', 'warning');
                 updateAddrPrefix(); 
                 document.getElementById('final-item-list').innerText = Object.keys(order.items).filter(k=>order.items[k]>0).map(k=>(CATALOG.A[k]||CATALOG.B[k]).n+'x'+order.items[k]).join(', ');
                 document.getElementById('final-price').innerText = order.totalPrice;
@@ -563,5 +535,3 @@
 </script>
 </body>
 </html>
-
-
