@@ -127,7 +127,7 @@
                 4台以上每加1台 +$1500
             </div>
             <ul class="nav nav-tabs nav-fill mb-3" id="myTab" role="tablist">
-                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#content-a">A. 冷氣/家電</button></li>
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#content-a">A. 冷氣/洗衣機</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#content-b">B. 居家/清潔</button></li>
             </ul>
             <div class="tab-content">
@@ -161,7 +161,7 @@
             <div class="legend-box">
                 <div class="legend-item"><div class="legend-dot" style="background:#0d6efd;"></div>冷氣/洗衣機</div>
                 <div class="legend-item"><div class="legend-dot" style="background:#198754;"></div>居家/清潔</div>
-                <div class="legend-item"><div class="legend-dot" style="background:#fd7e14;"></div>冷氣/居家</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#fd7e14;"></div>冷氣&居家</div>
             </div>
 
             <div class="calendar-controls">
@@ -222,7 +222,7 @@
     };
 
     const CATALOG = { 
-        'A': { 'ac_split':{n:'分離式冷氣',t:60,p:2000}, 'ac_window':{n:'窗型冷氣',t:120,p:3500}, 'ac_hidden':{n:'吊隱式冷氣',t:120,p:3000}, 'ac_4way':{n:'四方吹冷氣',t:150,p:4500}, 'wash_top':{n:'直立洗',t:90,p:1500}, 'wash_drum':{n:'滾筒洗',t:180,p:3500} },
+        'A': { 'ac_split':{n:'分離式冷氣',t:60,p:2000}, 'ac_window':{n:'窗型冷氣',t:120,p:3500}, 'ac_hidden':{n:'吊隱式冷氣',t:120,p:3000}, 'ac_4way':{n:'四方吹冷氣',t:150,p:4500}, 'wash_top':{n:'直立洗衣機',t:90,p:1500}, 'wash_drum':{n:'滾筒洗衣機',t:180,p:3500} },
         'B': { 'bath':{n:'浴室鍍膜(間)',t:210,p:4500}, 'bed_1':{n:'洗床(單人)',t:180,p:1500}, 'bed_2':{n:'洗床(雙人)',t:180,p:2500}, 'sofa_1':{n:'洗沙發(單人)',t:120,p:1500}, 'sofa_2':{n:'洗沙發(雙人)',t:120,p:2000}, 'sofa_all':{n:'洗沙發(全組)',t:120,p:3500}, 'mite_home':{n:'居家除塵蟎(間)',t:60,p:2000}, 'mite_sofa_1':{n:'除蟎-沙發(單)',t:60,p:600}, 'mite_sofa_2':{n:'除蟎-沙發(雙)',t:60,p:1000}, 'mite_sofa_l':{n:'除蟎-沙發(L型)',t:60,p:1500}, 'mite_bed_1':{n:'除蟎-床(單)',t:60,p:600}, 'mite_bed_2':{n:'除蟎-床(雙)',t:60,p:1200} }
     };
 
@@ -483,7 +483,7 @@
             if(currentStep===2 && order.totalPrice===0) return Swal.fire('請選服務');
             
             if(currentStep===4){
-                if(order.slots.length !== 3) return Swal.fire('請選擇 3 個時段', '為了方便安排，請務必選擇 3 個志願序時段才能繼續喔！', 'warning');
+                if(order.slots.length !== 3) return Swal.fire('請選擇 3 個時段', '為了方便安排，請務必選擇 3 個時段才能繼續喔！', 'warning');
                 updateAddrPrefix(); 
                 document.getElementById('final-item-list').innerText = Object.keys(order.items).filter(k=>order.items[k]>0).map(k=>(CATALOG.A[k]||CATALOG.B[k]).n+'x'+order.items[k]).join(', ');
                 document.getElementById('final-price').innerText = order.totalPrice;
@@ -505,7 +505,7 @@
         let city = document.getElementById('city-select').value;
         let remarks = document.getElementById('user-remarks').value; 
 
-        if(city === '其他縣市' && a.length < 5) return Swal.fire('請填寫完整地址', '選擇其他縣市時，請務必填寫詳細地址以便我們評估車馬費。', 'warning');
+        if(city === '其他縣市' && a.length < 5) return Swal.fire('請填寫完整地址', '選擇其他縣市時，請務必填寫詳細地址以便師傅評估車馬費。', 'warning');
         
         if(!n||!p||!a) return Swal.fire('請填完整資料');
         
@@ -535,5 +535,6 @@
 </script>
 </body>
 </html>
+
 
 
